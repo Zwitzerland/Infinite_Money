@@ -1,0 +1,238 @@
+#!/usr/bin/env python3
+"""
+Sprint Board Generator for AlphaQuanta Q-v2
+Creates sprint planning boards and task assignments from YAML templates.
+"""
+
+import yaml
+import json
+import argparse
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict, List, Any
+
+
+class SprintBoardGenerator:
+    """Generates sprint boards and task assignments."""
+    
+    def __init__(self, template_file: str):
+        self.template_file = Path(template_file)
+        self.sprint_data = self.load_template()
+        
+    def load_template(self) -> Dict[str, Any]:
+        """Load sprint template from YAML file."""
+        if not self.template_file.exists():
+            raise FileNotFoundError(f"Sprint template not found: {self.template_file}")
+            
+        with open(self.template_file, 'r') as f:
+            return yaml.safe_load(f)
+    
+    def generate_sprint_board(self) -> Dict[str, Any]:
+        """Generate complete sprint board with tasks and assignments."""
+        sprint_info = self.sprint_data.get('sprint', {})
+        tasks = self.sprint_data.get('tasks', [])
+        
+        start_date = datetime.now()
+        duration_days = sprint_info.get('duration_days', 14)
+        end_date = start_date + timedelta(days=duration_days)
+        
+        board = {
+            "sprint_info": {
+                "name": sprint_info.get('name', 'Sprint Alpha'),
+                "version": sprint_info.get('version', 'Q-v2'),
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+                "duration_days": duration_days,
+                "budget": sprint_info.get('budget', {}),
+                "objectives": sprint_info.get('objectives', [])
+            },
+            "task_matrix": [],
+            "owners": set(),
+            "compute_budget": {
+                "total_acu": 0,
+                "total_qpu": 0,
+                "by_owner": {}
+            },
+            "milestones": sprint_info.get('milestones', []),
+            "generated_at": datetime.now().isoformat()
+        }
+        
+        for task in tasks:
+            task_entry = {
+                "day_range": task.get('day_range', 'D1-D2'),
+                "owner": task.get('owner', 'Unassigned'),
+                "deliverable": task.get('deliverable', ''),
+                "compute_limit": task.get('compute_limit', '0 ACU'),
+                "kpi": task.get('kpi', ''),
+                "priority": task.get('priority', 'Medium'),
+                "dependencies": task.get('dependencies', []),
+                "estimated_hours": task.get('estimated_hours', 8),
+                "status": "Not Started"
+            }
+            
+            board["task_matrix"].append(task_entry)
+            board["owners"].add(task_entry["owner"])
+            
+            acu_cost, qpu_cost = self.parse_compute_limit(task_entry["compute_limit"])
+            board["compute_budget"]["total_acu"] += acu_cost
+            board["compute_budget"]["total_qpu"] += qpu_cost
+            
+            owner = task_entry["owner"]
+            if owner not in board["compute_budget"]["by_owner"]:
+                board["compute_budget"]["by_owner"][owner] = {"acu": 0, "qpu": 0}
+            board["compute_budget"]["by_owner"][owner]["acu"] += acu_cost
+            board["compute_budget"]["by_owner"][owner]["qpu"] += qpu_cost
+        
+        board["owners"] = list(board["owners"])
+        return board
+    
+    def parse_compute_limit(self, limit_str: str) -> tuple[float, float]:
+        """Parse compute limit string to extract ACU and QPU costs."""
+        acu_cost = 0.0
+        qpu_cost = 0.0
+        
+        parts = limit_str.lower().split()
+        for i, part in enumerate(parts):
+            if 'acu' in part and i > 0:
+                try:
+                    acu_cost = float(parts[i-1])
+                except (ValueError, IndexError):
+                    pass
+            elif 'qpu' in part and i > 0:
+                try:
+                    qpu_cost = float(parts[i-1])
+                except (ValueError, IndexError):
+                    pass
+        
+        return acu_cost, qpu_cost
+    
+    def create_github_issues(self, board: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Create GitHub issue templates for each task."""
+        issues = []
+        
+        for task in board["task_matrix"]:
+            issue = {
+                "title": f"[{task['day_range']}] {task['deliverable']}",
+                "body": f"""## Sprint Alpha Task
+
+**Owner**: {task['owner']}
+**Day Range**: {task['day_range']}
+**Priority**: {task['priority']}
+**Compute Limit**: {task['compute_limit']}
+**KPI**: {task['kpi']}
+
+{task['deliverable']}
+
+{', '.join(task['dependencies']) if task['dependencies'] else 'None'}
+
+- [ ] Deliverable completed within compute budget
+- [ ] KPI target achieved: {task['kpi']}
+- [ ] All dependencies resolved
+- [ ] Code reviewed and tested
+
+{task['estimated_hours']}h
+
+---
+*Generated by AlphaQuanta Sprint Board Generator*
+""",
+                "labels": [
+                    f"sprint-alpha",
+                    f"owner-{task['owner'].lower()}",
+                    f"priority-{task['priority'].lower()}",
+                    "quantum-trading"
+                ],
+                "assignees": [task['owner']] if task['owner'] != 'Unassigned' else []
+            }
+            issues.append(issue)
+        
+        return issues
+    
+    def generate_markdown_board(self, board: Dict[str, Any]) -> str:
+        """Generate markdown sprint board for documentation."""
+        md = f"""# {board['sprint_info']['name']} - {board['sprint_info']['version']}
+
+- **Duration**: {board['sprint_info']['start_date'][:10]} to {board['sprint_info']['end_date'][:10]} ({board['sprint_info']['duration_days']} days)
+- **Total Budget**: {board['compute_budget']['total_acu']} ACU + {board['compute_budget']['total_qpu']} QPU-min
+
+"""
+        
+        for obj in board['sprint_info']['objectives']:
+            md += f"- {obj}\n"
+        
+        md += "\n## Task Matrix\n\n"
+        md += "| Day Range | Owner | Deliverable | Compute Limit | KPI | Status |\n"
+        md += "|-----------|-------|-------------|---------------|-----|--------|\n"
+        
+        for task in board['task_matrix']:
+            md += f"| {task['day_range']} | {task['owner']} | {task['deliverable']} | {task['compute_limit']} | {task['kpi']} | {task['status']} |\n"
+        
+        md += "\n## Compute Budget by Owner\n\n"
+        for owner, budget in board['compute_budget']['by_owner'].items():
+            md += f"- **{owner}**: {budget['acu']} ACU + {budget['qpu']} QPU-min\n"
+        
+        md += "\n## Milestones\n\n"
+        for milestone in board['milestones']:
+            md += f"- **{milestone.get('name', 'Milestone')}** ({milestone.get('date', 'TBD')}): {milestone.get('description', '')}\n"
+        
+        return md
+    
+    def save_outputs(self, board: Dict[str, Any], output_dir: str = "sprint_output"):
+        """Save all sprint outputs to files."""
+        output_path = Path(output_dir)
+        output_path.mkdir(exist_ok=True)
+        
+        with open(output_path / "sprint_board.json", 'w') as f:
+            json.dump(board, f, indent=2)
+        
+        md_content = self.generate_markdown_board(board)
+        with open(output_path / "sprint_board.md", 'w') as f:
+            f.write(md_content)
+        
+        issues = self.create_github_issues(board)
+        with open(output_path / "github_issues.json", 'w') as f:
+            json.dump(issues, f, indent=2)
+        
+        print(f"✅ Sprint board generated in {output_path}/")
+        print(f"   - sprint_board.json: Complete sprint data")
+        print(f"   - sprint_board.md: Markdown documentation")
+        print(f"   - github_issues.json: GitHub issue templates")
+        
+        return output_path
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate AlphaQuanta sprint board")
+    parser.add_argument("--template", required=True, help="Sprint template YAML file")
+    parser.add_argument("--output", default="sprint_output", help="Output directory")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+    
+    args = parser.parse_args()
+    
+    try:
+        generator = SprintBoardGenerator(args.template)
+        board = generator.generate_sprint_board()
+        output_path = generator.save_outputs(board, args.output)
+        
+        if args.verbose:
+            print("\n📊 Sprint Summary:")
+            print(f"   Tasks: {len(board['task_matrix'])}")
+            print(f"   Owners: {len(board['owners'])}")
+            print(f"   Total ACU Budget: {board['compute_budget']['total_acu']}")
+            print(f"   Total QPU Budget: {board['compute_budget']['total_qpu']}")
+            print(f"   Duration: {board['sprint_info']['duration_days']} days")
+        
+        print(f"\n🚀 Sprint Alpha initialized successfully!")
+        print(f"Next steps:")
+        print(f"1. Review {output_path}/sprint_board.md")
+        print(f"2. Create GitHub issues from {output_path}/github_issues.json")
+        print(f"3. Assign owners and start Day-1 tasks")
+        
+    except Exception as e:
+        print(f"❌ Error generating sprint board: {e}")
+        return 1
+    
+    return 0
+
+
+if __name__ == "__main__":
+    exit(main())
