@@ -1,0 +1,454 @@
+{
+  "generated_at": "2025-07-19T12:39:45.668984+00:00",
+  "session_id": "finalization_run",
+  "summary": {
+    "total_acu_used": 10,
+    "total_qpu_minutes": 0,
+    "acu_budget": 10,
+    "qpu_budget_minutes": 10,
+    "acu_within_budget": true,
+    "qpu_within_budget": true,
+    "total_operations": 10
+  },
+  "acu_breakdown": {
+    "entries": [
+      {
+        "timestamp": "2025-07-19T12:39:45.668925+00:00",
+        "type": "ACU",
+        "operation": "install_sh_creation",
+        "cost": 2,
+        "details": {
+          "task": "create idempotent installer script",
+          "complexity": "high",
+          "lines_of_code": 350
+        },
+        "session_id": "finalization_run"
+      },
+      {
+        "timestamp": "2025-07-19T12:39:45.668937+00:00",
+        "type": "ACU",
+        "operation": "install_sh_validation",
+        "cost": 1,
+        "details": {
+          "task": "validate installer script logic",
+          "validation_steps": 8
+        },
+        "session_id": "finalization_run"
+      },
+      {
+        "timestamp": "2025-07-19T12:39:45.668941+00:00",
+        "type": "ACU",
+        "operation": "qconfig_creation",
+        "cost": 1,
+        "details": {
+          "task": "quantum configuration template",
+          "quantum_providers": [
+            "IBM",
+            "D-Wave"
+          ],
+          "governance_rules": 6
+        },
+        "session_id": "finalization_run"
+      },
+      {
+        "timestamp": "2025-07-19T12:39:45.668944+00:00",
+        "type": "ACU",
+        "operation": "runner_patch",
+        "cost": 1,
+        "details": {
+          "task": "CLI runner quantum integration",
+          "quantum_fallback_logic": true
+        },
+        "session_id": "finalization_run"
+      },
+      {
+        "timestamp": "2025-07-19T12:39:45.668947+00:00",
+        "type": "ACU",
+        "operation": "readme_update",
+        "cost": 0,
+        "details": {
+          "task": "quick-start documentation",
+          "cached": true,
+          "reason": "template reuse"
+        },
+        "session_id": "finalization_run"
+      },
+      {
+        "timestamp": "2025-07-19T12:39:45.668949+00:00",
+        "type": "ACU",
+        "operation": "ci_workflow_creation",
+        "cost": 1,
+        "details": {
+          "task": "GitHub Actions CI workflow",
+          "validation_steps": 12,
+          "mock_services": 5
+        },
+        "session_id": "finalization_run"
+      },
+      {
+        "timestamp": "2025-07-19T12:39:45.668951+00:00",
+        "type": "ACU",
+        "operation": "ci_workflow_optimization",
+        "cost": 1,
+        "details": {
+          "task": "CI workflow optimization",
+          "timeout_handling": true,
+          "health_checks": 4
+        },
+        "session_id": "finalization_run"
+      },
+      {
+        "timestamp": "2025-07-19T12:39:45.668953+00:00",
+        "type": "ACU",
+        "operation": "guardrails_test_creation",
+        "cost": 1,
+        "details": {
+          "task": "jailbreak protection tests",
+          "test_scenarios": 8,
+          "hitl_validation": true
+        },
+        "session_id": "finalization_run"
+      },
+      {
+        "timestamp": "2025-07-19T12:39:45.668956+00:00",
+        "type": "ACU",
+        "operation": "docker_compose_creation",
+        "cost": 1,
+        "details": {
+          "task": "multi-service orchestration",
+          "services": 6,
+          "health_checks": true,
+          "quantum_sdk_integration": true
+        },
+        "session_id": "finalization_run"
+      },
+      {
+        "timestamp": "2025-07-19T12:39:45.668958+00:00",
+        "type": "ACU",
+        "operation": "ledger_script_creation",
+        "cost": 1,
+        "details": {
+          "task": "ACU/QPU usage tracking",
+          "current_operation": true
+        },
+        "session_id": "finalization_run"
+      }
+    ],
+    "by_operation": {
+      "install_sh_creation": {
+        "count": 1,
+        "total_cost": 2,
+        "entries": [
+          {
+            "timestamp": "2025-07-19T12:39:45.668925+00:00",
+            "type": "ACU",
+            "operation": "install_sh_creation",
+            "cost": 2,
+            "details": {
+              "task": "create idempotent installer script",
+              "complexity": "high",
+              "lines_of_code": 350
+            },
+            "session_id": "finalization_run"
+          }
+        ]
+      },
+      "install_sh_validation": {
+        "count": 1,
+        "total_cost": 1,
+        "entries": [
+          {
+            "timestamp": "2025-07-19T12:39:45.668937+00:00",
+            "type": "ACU",
+            "operation": "install_sh_validation",
+            "cost": 1,
+            "details": {
+              "task": "validate installer script logic",
+              "validation_steps": 8
+            },
+            "session_id": "finalization_run"
+          }
+        ]
+      },
+      "qconfig_creation": {
+        "count": 1,
+        "total_cost": 1,
+        "entries": [
+          {
+            "timestamp": "2025-07-19T12:39:45.668941+00:00",
+            "type": "ACU",
+            "operation": "qconfig_creation",
+            "cost": 1,
+            "details": {
+              "task": "quantum configuration template",
+              "quantum_providers": [
+                "IBM",
+                "D-Wave"
+              ],
+              "governance_rules": 6
+            },
+            "session_id": "finalization_run"
+          }
+        ]
+      },
+      "runner_patch": {
+        "count": 1,
+        "total_cost": 1,
+        "entries": [
+          {
+            "timestamp": "2025-07-19T12:39:45.668944+00:00",
+            "type": "ACU",
+            "operation": "runner_patch",
+            "cost": 1,
+            "details": {
+              "task": "CLI runner quantum integration",
+              "quantum_fallback_logic": true
+            },
+            "session_id": "finalization_run"
+          }
+        ]
+      },
+      "readme_update": {
+        "count": 1,
+        "total_cost": 0,
+        "entries": [
+          {
+            "timestamp": "2025-07-19T12:39:45.668947+00:00",
+            "type": "ACU",
+            "operation": "readme_update",
+            "cost": 0,
+            "details": {
+              "task": "quick-start documentation",
+              "cached": true,
+              "reason": "template reuse"
+            },
+            "session_id": "finalization_run"
+          }
+        ]
+      },
+      "ci_workflow_creation": {
+        "count": 1,
+        "total_cost": 1,
+        "entries": [
+          {
+            "timestamp": "2025-07-19T12:39:45.668949+00:00",
+            "type": "ACU",
+            "operation": "ci_workflow_creation",
+            "cost": 1,
+            "details": {
+              "task": "GitHub Actions CI workflow",
+              "validation_steps": 12,
+              "mock_services": 5
+            },
+            "session_id": "finalization_run"
+          }
+        ]
+      },
+      "ci_workflow_optimization": {
+        "count": 1,
+        "total_cost": 1,
+        "entries": [
+          {
+            "timestamp": "2025-07-19T12:39:45.668951+00:00",
+            "type": "ACU",
+            "operation": "ci_workflow_optimization",
+            "cost": 1,
+            "details": {
+              "task": "CI workflow optimization",
+              "timeout_handling": true,
+              "health_checks": 4
+            },
+            "session_id": "finalization_run"
+          }
+        ]
+      },
+      "guardrails_test_creation": {
+        "count": 1,
+        "total_cost": 1,
+        "entries": [
+          {
+            "timestamp": "2025-07-19T12:39:45.668953+00:00",
+            "type": "ACU",
+            "operation": "guardrails_test_creation",
+            "cost": 1,
+            "details": {
+              "task": "jailbreak protection tests",
+              "test_scenarios": 8,
+              "hitl_validation": true
+            },
+            "session_id": "finalization_run"
+          }
+        ]
+      },
+      "docker_compose_creation": {
+        "count": 1,
+        "total_cost": 1,
+        "entries": [
+          {
+            "timestamp": "2025-07-19T12:39:45.668956+00:00",
+            "type": "ACU",
+            "operation": "docker_compose_creation",
+            "cost": 1,
+            "details": {
+              "task": "multi-service orchestration",
+              "services": 6,
+              "health_checks": true,
+              "quantum_sdk_integration": true
+            },
+            "session_id": "finalization_run"
+          }
+        ]
+      },
+      "ledger_script_creation": {
+        "count": 1,
+        "total_cost": 1,
+        "entries": [
+          {
+            "timestamp": "2025-07-19T12:39:45.668958+00:00",
+            "type": "ACU",
+            "operation": "ledger_script_creation",
+            "cost": 1,
+            "details": {
+              "task": "ACU/QPU usage tracking",
+              "current_operation": true
+            },
+            "session_id": "finalization_run"
+          }
+        ]
+      }
+    }
+  },
+  "qpu_breakdown": {
+    "entries": [],
+    "by_operation": {},
+    "by_backend": {}
+  },
+  "compliance": {
+    "acu_compliant": true,
+    "qpu_compliant": true,
+    "overall_compliant": true
+  },
+  "entries": [
+    {
+      "timestamp": "2025-07-19T12:39:45.668925+00:00",
+      "type": "ACU",
+      "operation": "install_sh_creation",
+      "cost": 2,
+      "details": {
+        "task": "create idempotent installer script",
+        "complexity": "high",
+        "lines_of_code": 350
+      },
+      "session_id": "finalization_run"
+    },
+    {
+      "timestamp": "2025-07-19T12:39:45.668937+00:00",
+      "type": "ACU",
+      "operation": "install_sh_validation",
+      "cost": 1,
+      "details": {
+        "task": "validate installer script logic",
+        "validation_steps": 8
+      },
+      "session_id": "finalization_run"
+    },
+    {
+      "timestamp": "2025-07-19T12:39:45.668941+00:00",
+      "type": "ACU",
+      "operation": "qconfig_creation",
+      "cost": 1,
+      "details": {
+        "task": "quantum configuration template",
+        "quantum_providers": [
+          "IBM",
+          "D-Wave"
+        ],
+        "governance_rules": 6
+      },
+      "session_id": "finalization_run"
+    },
+    {
+      "timestamp": "2025-07-19T12:39:45.668944+00:00",
+      "type": "ACU",
+      "operation": "runner_patch",
+      "cost": 1,
+      "details": {
+        "task": "CLI runner quantum integration",
+        "quantum_fallback_logic": true
+      },
+      "session_id": "finalization_run"
+    },
+    {
+      "timestamp": "2025-07-19T12:39:45.668947+00:00",
+      "type": "ACU",
+      "operation": "readme_update",
+      "cost": 0,
+      "details": {
+        "task": "quick-start documentation",
+        "cached": true,
+        "reason": "template reuse"
+      },
+      "session_id": "finalization_run"
+    },
+    {
+      "timestamp": "2025-07-19T12:39:45.668949+00:00",
+      "type": "ACU",
+      "operation": "ci_workflow_creation",
+      "cost": 1,
+      "details": {
+        "task": "GitHub Actions CI workflow",
+        "validation_steps": 12,
+        "mock_services": 5
+      },
+      "session_id": "finalization_run"
+    },
+    {
+      "timestamp": "2025-07-19T12:39:45.668951+00:00",
+      "type": "ACU",
+      "operation": "ci_workflow_optimization",
+      "cost": 1,
+      "details": {
+        "task": "CI workflow optimization",
+        "timeout_handling": true,
+        "health_checks": 4
+      },
+      "session_id": "finalization_run"
+    },
+    {
+      "timestamp": "2025-07-19T12:39:45.668953+00:00",
+      "type": "ACU",
+      "operation": "guardrails_test_creation",
+      "cost": 1,
+      "details": {
+        "task": "jailbreak protection tests",
+        "test_scenarios": 8,
+        "hitl_validation": true
+      },
+      "session_id": "finalization_run"
+    },
+    {
+      "timestamp": "2025-07-19T12:39:45.668956+00:00",
+      "type": "ACU",
+      "operation": "docker_compose_creation",
+      "cost": 1,
+      "details": {
+        "task": "multi-service orchestration",
+        "services": 6,
+        "health_checks": true,
+        "quantum_sdk_integration": true
+      },
+      "session_id": "finalization_run"
+    },
+    {
+      "timestamp": "2025-07-19T12:39:45.668958+00:00",
+      "type": "ACU",
+      "operation": "ledger_script_creation",
+      "cost": 1,
+      "details": {
+        "task": "ACU/QPU usage tracking",
+        "current_operation": true
+      },
+      "session_id": "finalization_run"
+    }
+  ]
+}
