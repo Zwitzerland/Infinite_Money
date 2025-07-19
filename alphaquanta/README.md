@@ -16,18 +16,54 @@ A production-grade agent framework for algorithmic trading using QuantConnect Le
 
 ## Quick Start
 
+### One-Line Install
 ```bash
+curl -sSL https://raw.githubusercontent.com/<ORG>/alphaquanta_q/main/install.sh | bash
+```
+
+### Manual Setup
+```bash
+# Clone repository
+git clone https://github.com/<ORG>/alphaquanta_q.git
+cd alphaquanta_q
+
 # Install dependencies
 poetry install
 
-# Paper trading backtest
-python runner.py --paper --symbol SPY --start 2018-01-01 --end 2024-12-31
+# Set up environment (edit with your tokens)
+cp .env.example .env
+nano .env
 
-# Live paper session
-python runner.py --live --paper --acu-cap 20
+# Start services
+docker-compose up -d
+
+# Run quantum-hybrid backtest
+python runner.py --mode backtest --quantum on --symbol SPY --start 2018-01-01 --end 2024-12-31
+
+# Paper trading with quantum alpha discovery
+python runner.py --mode paper --quantum on --acu-cap 20
+
+# Classical-only mode (no QPU usage)
+python runner.py --mode paper --quantum off --symbol SPY
 
 # Run tests
 pytest tests/ -v
+```
+
+### Environment Setup
+Set these environment variables in `.env`:
+```bash
+# Quantum Computing (required for quantum features)
+IBM_QUANTUM_TOKEN=your_ibm_token_here
+DWAVE_API_TOKEN=your_dwave_token_here
+
+# Trading APIs
+QC_API_TOKEN=your_quantconnect_token
+IB_USERNAME=your_ib_username
+IB_PASSWORD=your_ib_password
+
+# Optional: Monitoring credentials
+GRAFANA_PASSWORD=your_grafana_password
 ```
 
 ## Acceptance Criteria
