@@ -1,0 +1,46 @@
+
+quantum:
+  enabled: true
+  
+  ibm:
+    token: "${IBM_QUANTUM_TOKEN}"  # Set via environment variable
+    instance: "ibm-q/open/main"
+    backend: "ibm_brisbane"  # Default QPU backend
+    
+  dwave:
+    token: "${DWAVE_API_TOKEN}"  # Set via environment variable
+    solver: "Advantage_system4.1"  # Default quantum annealer
+    
+  governance:
+    max_qpu_minutes_per_run: 10  # Hard limit per workflow run
+    max_qpu_minutes_per_day: 60  # Daily budget limit
+    warning_threshold_minutes: 8  # Warning at 80% of run budget
+    
+  algorithms:
+    qaoa:
+      max_layers: 3  # QAOA circuit depth limit
+      optimizer: "COBYLA"
+      max_iterations: 100
+      
+    vqe:
+      ansatz: "EfficientSU2"
+      optimizer: "SPSA"
+      max_iterations: 200
+      
+  fallback:
+    use_simulator_on_failure: true
+    simulator_backend: "qasm_simulator"
+    classical_fallback_enabled: true
+
+classical:
+  models:
+    ensemble_size: 5
+    lightgbm_params:
+      num_leaves: 31
+      learning_rate: 0.05
+      feature_fraction: 0.9
+      
+risk:
+  quantum_circuit_timeout_seconds: 300
+  max_quantum_jobs_parallel: 2
+  circuit_validation_enabled: true
