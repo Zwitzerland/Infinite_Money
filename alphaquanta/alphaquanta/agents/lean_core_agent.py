@@ -43,12 +43,15 @@ class LeanCoreAgent:
         
         self.qaoa_optimizer = None
         self.diffusion_forecaster = None
+        self.quantum_var_calculator = None
         if quantum_enabled and qpu_tracker:
             try:
                 from ..quantum.qaoa_optimizer import QAOABasketOptimizer
                 from ..quantum.diffusion_forecaster import DiffusionTSForecaster
+                from ..quantum.quantum_var import QuantumVaRCalculator
                 self.qaoa_optimizer = QAOABasketOptimizer(config.get('quantum', {}), qpu_tracker)
                 self.diffusion_forecaster = DiffusionTSForecaster(config.get('quantum', {}), qpu_tracker)
+                self.quantum_var_calculator = QuantumVaRCalculator(config.get('quantum', {}))
                 self.logger.info("Quantum modules initialized successfully")
             except ImportError as e:
                 self.logger.warning(f"Quantum modules not available: {e}")
@@ -179,7 +182,7 @@ class LeanCoreAgent:
         )
     
     async def _enhance_with_quantum(self, signal: TradeSignal, market_data: Dict) -> TradeSignal:
-        """Enhance signal with quantum optimization."""
+        """Enhance signal with quantum optimization and risk assessment."""
         if not self.qaoa_optimizer:
             return signal
         
@@ -191,15 +194,59 @@ class LeanCoreAgent:
                 budget=10000.0
             )
             
+            volatility_forecast = None
+            if self.diffusion_forecaster:
+                historical_data = market_data.get('historical_data', [])
+                if historical_data:
+                    volatility_forecast = await self.diffusion_forecaster.forecast_volatility(signal.symbol, historical_data)
+            
+            var_result = None
+            if self.quantum_var_calculator and len(market_data.get('historical_data', [])) > 20:
+                portfolio_weights = [1.0]  # Single asset portfolio
+                historical_data = market_data.get('historical_data', [])
+                prices = [float(data.get('close', data.get('price', 100))) for data in historical_data]
+                returns = [0.001] * 20 if len(prices) < 2 else [(prices[i] - prices[i-1])/prices[i-1] for i in range(1, len(prices))]
+                
+                import numpy as np
+                var_result = await self.quantum_var_calculator.calculate_var(
+                    np.array(portfolio_weights), 
+                    np.array(returns).reshape(-1, 1), 
+                    confidence_level=0.95,
+                    qpu_tracker=self.qpu_tracker
+                )
+            
             quantum_confidence = quantum_weights.get(signal.symbol, signal.confidence)
+            
+            if volatility_forecast:
+                vol_regime = volatility_forecast.get('volatility_regime', 'normal')
+                vol_confidence = volatility_forecast.get('volatility_confidence', 0.5)
+                
+                if vol_regime == 'high':
+                    quantum_confidence *= 0.8  # Reduce confidence in high volatility
+                elif vol_regime == 'low':
+                    quantum_confidence *= 1.1  # Increase confidence in low volatility
+                
+                quantum_confidence = min(quantum_confidence * vol_confidence, 0.95)
+            
+            if var_result:
+                var_threshold = 0.03  # 3% daily VaR threshold
+                if var_result.get('quantum_var', 0) > var_threshold:
+                    risk_penalty = min(0.3, (var_result['quantum_var'] - var_threshold) * 10)
+                    quantum_confidence = max(0.1, quantum_confidence - risk_penalty)
+            
             enhanced_signal = signal.model_copy()
             enhanced_signal.confidence = min(quantum_confidence * 1.2, 0.95)
-            enhanced_signal.strategy = "quantum_enhanced_" + signal.strategy
+            enhanced_signal.strategy = "quantum_hybrid_" + signal.strategy
             enhanced_signal.metadata = {
                 "quantum_enhanced": True,
                 "original_confidence": signal.confidence,
-                "quantum_weights": quantum_weights
+                "quantum_weights": quantum_weights,
+                "volatility_forecast": volatility_forecast,
+                "var_result": var_result,
+                "quantum_modules_used": ["qaoa", "diffusion", "var"] if var_result else ["qaoa", "diffusion"]
             }
+            
+            self.logger.info(f"Enhanced signal with quantum modules: confidence {signal.confidence:.2f} → {enhanced_signal.confidence:.2f}")
             
             return enhanced_signal
             

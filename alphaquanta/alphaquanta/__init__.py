@@ -14,6 +14,7 @@ from .tools.action_tools import IBOrderRouter, LeanBacktestRunner, PositionSizer
 from .guardrails.risk_guardrails import RiskGuardrailEngine, NotionalLimitGuardrail
 from .telemetry.acu_tracker import ACUTracker
 from .telemetry.pnl_monitor import PnLMonitor
+from .telemetry.qpu_tracker import QPUTracker
 
 __version__ = "0.1.0"
 __all__ = [
@@ -27,4 +28,5 @@ __all__ = [
     "NotionalLimitGuardrail",
     "ACUTracker",
     "PnLMonitor",
+    "QPUTracker",
 ]
