@@ -147,7 +147,7 @@ class SymbolRiskGuardrail(BaseGuardrail):
 class ConcentrationGuardrail(BaseGuardrail):
     """Guardrail for portfolio concentration limits."""
     
-    def __init__(self, max_concentration: float = 0.3):
+    def __init__(self, max_concentration: float = 0.9):
         super().__init__("concentration")
         self.max_concentration = max_concentration
     
@@ -260,7 +260,7 @@ class RiskGuardrailEngine:
         
         self.guardrails.append(SymbolRiskGuardrail())
         self.guardrails.append(ConcentrationGuardrail(
-            max_concentration=risk_config.get('max_concentration', 0.3)
+            max_concentration=risk_config.get('max_concentration', 0.9)
         ))
         self.guardrails.append(QuantumCircuitGuardrail())
         
@@ -337,4 +337,5 @@ class RiskGuardrailEngine:
                 timestamp=datetime.now()
             )
         except ImportError:
-            self.logger.warning("HITL escalation module not available")
+            self.logger.warning("HITL escalation module not available - blocking trade")
+            return
