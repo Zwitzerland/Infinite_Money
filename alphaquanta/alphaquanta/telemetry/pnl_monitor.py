@@ -3,7 +3,7 @@ PnL (Profit and Loss) monitoring for trading performance tracking.
 """
 
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timedelta
 import logging
 import json
@@ -251,3 +251,45 @@ class PnLMonitor:
             self.performance_metrics[key] = 0.0
         
         self.logger.info("PnL monitor reset")
+    
+    def add_hmm_metrics(self, regime_detector) -> Dict[str, Any]:
+        """Add HMM regime metrics to performance summary."""
+        if not regime_detector or not regime_detector.current_regime:
+            return {}
+        
+        hmm_metrics = {
+            'hmm_current_regime': regime_detector.current_regime['current_regime'],
+            'hmm_current_state': regime_detector.current_regime['current_state'],
+            'hmm_confidence': regime_detector.current_regime['confidence'],
+            'hmm_stability': regime_detector.current_regime['stability'],
+            'hmm_state_distribution': regime_detector.current_regime['state_probabilities']
+        }
+        
+        return hmm_metrics
+
+    def export_executive_digest(self, regime_detector=None) -> str:
+        """Export 60-minute executive digest with HMM state distribution."""
+        summary = self.get_performance_summary()
+        
+        if regime_detector:
+            summary['hmm_metrics'] = self.add_hmm_metrics(regime_detector)
+        
+        executive_digest = {
+            'timestamp': datetime.now().isoformat(),
+            'pnl_summary': {
+                'current_capital': summary['capital']['current'],
+                'total_return_pct': summary['capital']['total_return_pct'],
+                'sharpe_ratio': summary['performance']['sharpe_ratio']
+            },
+            'risk_metrics': {
+                'var_95_pct': summary['performance']['var_95_pct'],
+                'max_drawdown_pct': summary['performance']['max_drawdown_pct']
+            },
+            'hmm_state_distribution': summary.get('hmm_metrics', {}).get('hmm_state_distribution', []),
+            'regime_info': {
+                'current_regime': summary.get('hmm_metrics', {}).get('hmm_current_regime', 'unknown'),
+                'confidence': summary.get('hmm_metrics', {}).get('hmm_confidence', 0.0)
+            }
+        }
+        
+        return json.dumps(executive_digest, indent=2)

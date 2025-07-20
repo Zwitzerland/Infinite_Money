@@ -44,3 +44,28 @@ risk:
   quantum_circuit_timeout_seconds: 300
   max_quantum_jobs_parallel: 2
   circuit_validation_enabled: true
+
+regime_detection:
+  enabled: true
+  n_states: 3
+  lookback_days: 252
+  retrain_frequency: "daily"
+  min_observations: 50
+  
+  features:
+    use_returns: true
+    use_volatility: true
+    use_volume: true
+    use_momentum: true
+    use_mean_reversion: true
+  
+  regime_labels:
+    0: "low_volatility_bullish"
+    1: "normal_volatility"
+    2: "high_volatility_bearish"
+  
+  micro_services:
+    hmm_core_port: 8080
+    hmm_exporter_port: 9091
+    redis_url: "redis://redis:6379"
+    latency_target_ms: 10

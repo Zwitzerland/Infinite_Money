@@ -7,6 +7,7 @@ from typing import Dict, List, Optional, Any, Union
 from datetime import datetime
 import logging
 import json
+import numpy as np
 
 from ..models import TradingMode, TradeSet, TradeSignal, BacktestResult, OrderSide, OrderType
 from ..tools.data_tools import QuantConnectDataTool, MarketDataTool
@@ -44,15 +45,18 @@ class LeanCoreAgent:
         self.qaoa_optimizer = None
         self.diffusion_forecaster = None
         self.quantum_var_calculator = None
+        self.regime_detector = None
         if quantum_enabled and qpu_tracker:
             try:
                 from ..quantum.qaoa_optimizer import QAOABasketOptimizer
                 from ..quantum.diffusion_forecaster import DiffusionTSForecaster
                 from ..quantum.quantum_var import QuantumVaRCalculator
+                from ..regime.hmm_detector import MarketRegimeDetector
                 self.qaoa_optimizer = QAOABasketOptimizer(config.get('quantum', {}), qpu_tracker)
                 self.diffusion_forecaster = DiffusionTSForecaster(config.get('quantum', {}), qpu_tracker)
                 self.quantum_var_calculator = QuantumVaRCalculator(config.get('quantum', {}))
-                self.logger.info("Quantum modules initialized successfully")
+                self.regime_detector = MarketRegimeDetector(config)
+                self.logger.info("Quantum modules and HMM regime detector initialized successfully")
             except ImportError as e:
                 self.logger.warning(f"Quantum modules not available: {e}")
                 self.quantum_enabled = False
@@ -187,11 +191,28 @@ class LeanCoreAgent:
             return signal
         
         try:
+            hmm_state_probs = None
+            if self.regime_detector:
+                import pandas as pd
+                historical_data = market_data.get('historical_data', [])
+                if len(historical_data) > 50:
+                    price_df = pd.DataFrame(historical_data)
+                    if not price_df.empty and 'price' in price_df.columns:
+                        try:
+                            if self.regime_detector.hmm_model is None:
+                                await self.regime_detector.train_model(price_df)
+                            regime_info = await self.regime_detector.detect_regime(price_df)
+                            hmm_state_probs = np.array(regime_info['state_probabilities'])
+                            self.logger.info(f"HMM regime detected: {regime_info['current_regime']} (confidence: {regime_info['confidence']:.3f})")
+                        except Exception as e:
+                            self.logger.warning(f"HMM regime detection failed: {e}")
+
             quantum_weights = await self.qaoa_optimizer.optimize_basket(
                 [signal.symbol], 
                 correlation_matrix=None,
                 expected_returns=None,
-                budget=10000.0
+                budget=10000.0,
+                hmm_state_probs=hmm_state_probs
             )
             
             volatility_forecast = None
@@ -243,7 +264,8 @@ class LeanCoreAgent:
                 "quantum_weights": quantum_weights,
                 "volatility_forecast": volatility_forecast,
                 "var_result": var_result,
-                "quantum_modules_used": ["qaoa", "diffusion", "var"] if var_result else ["qaoa", "diffusion"]
+                "hmm_state_probs": hmm_state_probs.tolist() if hmm_state_probs is not None else None,
+                "quantum_modules_used": ["qaoa", "diffusion", "var", "hmm"] if var_result and hmm_state_probs is not None else ["qaoa", "diffusion", "hmm"] if hmm_state_probs is not None else ["qaoa", "diffusion", "var"] if var_result else ["qaoa", "diffusion"]
             }
             
             self.logger.info(f"Enhanced signal with quantum modules: confidence {signal.confidence:.2f} → {enhanced_signal.confidence:.2f}")

@@ -125,12 +125,70 @@ services:
       retries: 3
     restart: unless-stopped
 
+  hmm-core:
+    build:
+      context: ./docker/hmm-core
+      dockerfile: Dockerfile
+    container_name: alphaquanta-hmm-core
+    environment:
+      - HMM_N_STATES=3
+      - HMM_RETRAIN_FREQUENCY=daily
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./data:/app/data
+      - hmm-models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - alphaquanta-network
+
+  hmm-exporter:
+    build:
+      context: ./docker/hmm-exporter
+      dockerfile: Dockerfile
+    container_name: alphaquanta-hmm-exporter
+    environment:
+      - PROMETHEUS_PORT=9091
+      - HMM_CORE_URL=http://hmm-core:8080
+    ports:
+      - "9091:9091"
+    depends_on:
+      - hmm-core
+      - prometheus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/metrics"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - alphaquanta-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: alphaquanta-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - alphaquanta-network
+
 volumes:
   ib-settings:
   prometheus-data:
   grafana-data:
   n8n-data:
+  hmm-models:
+  redis-data:
 
 networks:
   default:
     name: alphaquanta-network
+  alphaquanta-network:
+    driver: bridge

@@ -263,6 +263,7 @@ class RiskGuardrailEngine:
             max_concentration=risk_config.get('max_concentration', 0.9)
         ))
         self.guardrails.append(QuantumCircuitGuardrail())
+        self.guardrails.append(HMMRegimeGuardrail())
         
         self.logger.info(f"Initialized {len(self.guardrails)} guardrails")
     
@@ -339,3 +340,50 @@ class RiskGuardrailEngine:
         except ImportError:
             self.logger.warning("HITL escalation module not available - blocking trade")
             return
+
+
+class HMMRegimeGuardrail(BaseGuardrail):
+    """Guardrail for HMM regime-aware risk assessment."""
+    
+    def __init__(self, regime_detector=None):
+        super().__init__("hmm_regime")
+        self.regime_detector = regime_detector
+        self.high_risk_regimes = {2}
+    
+    async def validate(self, signal: TradeSignal) -> Dict[str, Any]:
+        """Validate signal based on current market regime."""
+        if not self.regime_detector or not self.regime_detector.current_regime:
+            return {
+                "approved": True,
+                "risk_score": 0.0,
+                "rejection_reason": "",
+                "requires_hitl": False,
+                "metadata": {"hmm_regime_validated": False}
+            }
+        
+        current_state = self.regime_detector.current_regime['current_state']
+        confidence = self.regime_detector.current_regime['confidence']
+        
+        risk_score = 0.0
+        requires_hitl = False
+        rejection_reason = ""
+        
+        if current_state in self.high_risk_regimes:
+            risk_score += 0.3
+            if confidence > 0.8:
+                risk_score += 0.2
+                if signal.quantity > 5000:
+                    requires_hitl = True
+                    rejection_reason = f"High-risk regime {current_state} with large position"
+        
+        return {
+            "approved": risk_score < 0.7,
+            "risk_score": risk_score,
+            "rejection_reason": rejection_reason,
+            "requires_hitl": requires_hitl,
+            "metadata": {
+                "hmm_regime_validated": True,
+                "current_regime": current_state,
+                "regime_confidence": confidence
+            }
+        }

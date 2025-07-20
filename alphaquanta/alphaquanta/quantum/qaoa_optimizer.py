@@ -44,7 +44,8 @@ class QAOABasketOptimizer:
     async def optimize_basket(self, symbols: List[str], 
                             correlation_matrix: Optional[np.ndarray] = None,
                             expected_returns: Optional[np.ndarray] = None,
-                            budget: float = 10000.0) -> Dict[str, float]:
+                            budget: float = 10000.0,
+                            hmm_state_probs: Optional[np.ndarray] = None) -> Dict[str, float]:
         """Optimize portfolio weights using QAOA."""
         if not self.service_available:
             return await self._fallback_classical_optimization(symbols, budget)
@@ -60,7 +61,7 @@ class QAOABasketOptimizer:
             if expected_returns is None:
                 expected_returns = await self._estimate_expected_returns(symbols)
             
-            quantum_circuit = self._construct_qaoa_circuit(symbols, correlation_matrix, expected_returns)
+            quantum_circuit = self._construct_qaoa_circuit(symbols, correlation_matrix, expected_returns, hmm_state_probs)
             
             if self.warm_start_enabled:
                 initial_params = self._get_warm_start_parameters(symbols)
@@ -90,19 +91,26 @@ class QAOABasketOptimizer:
     
     def _construct_qaoa_circuit(self, symbols: List[str], 
                                correlation_matrix: np.ndarray,
-                               expected_returns: np.ndarray) -> Dict:
-        """Construct QAOA quantum circuit."""
+                               expected_returns: np.ndarray,
+                               hmm_state_probs: Optional[np.ndarray] = None) -> Dict:
+        """Construct QAOA quantum circuit with HMM state-conditional edge weights."""
         n_qubits = len(symbols)
+        
+        if hmm_state_probs is not None:
+            regime_factor = self._calculate_regime_modulation(hmm_state_probs)
+            correlation_matrix = correlation_matrix * regime_factor
+            self.logger.debug(f"Applied HMM regime modulation factor: {regime_factor:.3f}")
         
         circuit_config = {
             'n_qubits': n_qubits,
             'layers': self.max_layers,
             'correlation_matrix': correlation_matrix,
             'expected_returns': expected_returns,
+            'hmm_state_probs': hmm_state_probs,
             'shots': int(self.shots * (1 - self.shot_reduction_target)) if self.shot_reduction_target > 0 else self.shots
         }
         
-        self.logger.debug(f"Constructed QAOA circuit: {n_qubits} qubits, {self.max_layers} layers")
+        self.logger.debug(f"Constructed QAOA circuit: {n_qubits} qubits, {self.max_layers} layers, HMM-enhanced: {hmm_state_probs is not None}")
         
         return circuit_config
     
@@ -197,6 +205,19 @@ class QAOABasketOptimizer:
         self.logger.info(f"Normalized portfolio weights: {portfolio_weights}")
         
         return portfolio_weights
+    
+    def _calculate_regime_modulation(self, hmm_state_probs: np.ndarray) -> float:
+        """Calculate regime-based modulation factor for correlation matrix."""
+        regime_weights = np.array([1.2, 1.0, 0.8])
+        
+        if len(hmm_state_probs) != len(regime_weights):
+            regime_weights = np.linspace(1.2, 0.8, len(hmm_state_probs))
+        
+        modulation_factor = np.dot(hmm_state_probs, regime_weights)
+        
+        self.logger.debug(f"HMM regime modulation factor: {modulation_factor:.3f}")
+        
+        return modulation_factor
     
     async def _estimate_correlation_matrix(self, symbols: List[str]) -> np.ndarray:
         """Estimate correlation matrix for symbols."""
