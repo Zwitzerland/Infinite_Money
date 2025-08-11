@@ -1,0 +1,457 @@
+"""
+Comprehensive Investment Analysis & Portfolio Builder
+
+What this script does:
+- Fetches market data (price history, basic financials) using yfinance
+- Optionally fetches news using NewsAPI (requires API key)
+- Computes quantitative metrics: ROI, P/E, volatility (annualized), momentum
+- Scores stocks with a weighted model and ranks them
+- Constructs a suggested portfolio allocation subject to constraints
+- Produces simple visualizations and a PDF report
+
+Notes & requirements:
+- Python 3.9+
+- Install dependencies:
+    pip install yfinance pandas numpy scipy matplotlib reportlab requests python-dateutil
+- For news: get a NewsAPI key (https://newsapi.org/) and set NEWSAPI_KEY env var or pass to function
+- This is a template. Replace or extend data sources (Bloomberg/FactSet) where you have access.
+
+Usage example:
+    python investment_analysis.py --tickers NVDA ASML MSFT NEE ENPH --start 2023-01-01 --end 2025-08-10
+
+Limitations:
+- Uses free public data; for production, switch to licensed market data and broker execution APIs.
+
+"""
+
+import os
+import argparse
+from datetime import datetime, timedelta
+import math
+import io
+
+import numpy as np
+import pandas as pd
+import yfinance as yf
+import requests
+from scipy.optimize import minimize
+import matplotlib.pyplot as plt
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
+
+
+# -----------------------------
+# Utility / Data fetch functions
+# -----------------------------
+
+def fetch_price_history(tickers, start, end, interval='1d'):
+    """Fetches historical price data for a list of tickers using yfinance.
+    Returns a dict of DataFrames keyed by ticker with columns: Open, High, Low, Close, Adj Close, Volume
+    """
+    data = yf.download(tickers, start=start, end=end, interval=interval, group_by='ticker', threads=True, auto_adjust=False)
+    result = {}
+    if len(tickers) == 1:
+        result[tickers[0]] = data.copy()
+        return result
+
+    for t in tickers:
+        if t in data.columns.levels[0]:
+            df = data[t].copy()
+            result[t] = df
+        else:
+            # fallback when multi-index not present
+            try:
+                result[t] = data.xs(t, level=0, axis=1)
+            except Exception:
+                result[t] = pd.DataFrame()
+    return result
+
+
+def fetch_basic_financials(ticker):
+    """Get simple financials from yfinance Ticker object.
+    Returns dict with trailingPE (if available), forwardPE (if available), marketCap.
+    """
+    tk = yf.Ticker(ticker)
+    info = tk.info
+    fields = {
+        'trailingPE': info.get('trailingPE'),
+        'forwardPE': info.get('forwardPE'),
+        'marketCap': info.get('marketCap'),
+        'beta': info.get('beta')
+    }
+    return fields
+
+
+def fetch_news_for_ticker(ticker, api_key, page_size=10):
+    """Fetch recent news headlines for a ticker using NewsAPI.org (free tier limits apply).
+    Returns list of articles (dicts)."""
+    if api_key is None:
+        return []
+    # NewsAPI doesn't support ticker-only; we search for company name or ticker
+    query = ticker
+    url = 'https://newsapi.org/v2/everything'
+    params = {
+        'q': query,
+        'pageSize': page_size,
+        'sortBy': 'publishedAt',
+        'language': 'en',
+        'apiKey': api_key
+    }
+    resp = requests.get(url, params=params, timeout=10)
+    if resp.status_code != 200:
+        return []
+    data = resp.json()
+    return data.get('articles', [])
+
+
+# -----------------------------
+# Metrics & scoring
+# -----------------------------
+
+def compute_metrics(ticker, prices_df):
+    """Given a price dataframe for a ticker, compute returns, volatility, momentum, ROI metrics.
+    Returns a dict of metrics.
+    """
+    close = prices_df['Close'].copy().dropna()
+    if close.empty:
+        return None
+
+    # daily returns
+    daily_ret = close.pct_change().dropna()
+    # annualized volatility (std of daily returns * sqrt(252))
+    vol = daily_ret.std() * math.sqrt(252)
+    # trailing 12-month return (approx)
+    try:
+        ret_1y = close.iloc[-1] / close.iloc[max(0, len(close)-252)] - 1
+    except Exception:
+        ret_1y = close.pct_change(periods=len(close)-1).iloc[-1] if len(close) > 1 else 0.0
+
+    # momentum: 3m, 6m, 12m returns
+    def pct_change_months(months):
+        days = int(months * 21)
+        if len(close) > days:
+            return close.iloc[-1] / close.iloc[-1-days] - 1
+        else:
+            return np.nan
+
+    mom_3m = pct_change_months(3)
+    mom_6m = pct_change_months(6)
+    mom_12m = pct_change_months(12)
+
+    metrics = {
+        'annual_volatility': float(vol),
+        '1y_return': float(ret_1y),
+        'momentum_3m': float(mom_3m) if not np.isnan(mom_3m) else None,
+        'momentum_6m': float(mom_6m) if not np.isnan(mom_6m) else None,
+        'momentum_12m': float(mom_12m) if not np.isnan(mom_12m) else None,
+        'latest_close': float(close.iloc[-1])
+    }
+    return metrics
+
+
+def score_stocks(stock_info, weights=None):
+    """Score stocks based on a weighted model.
+    stock_info: dict of ticker -> {financials:..., metrics:...}
+    weights: dictionary of weights for features
+    Returns DataFrame sorted by score.
+    """
+    if weights is None:
+        weights = {
+            'growth': 0.30,       # 1y_return
+            'valuation': 0.25,    # forwardPE (lower better)
+            'volatility': 0.20,   # lower volatility better
+            'momentum': 0.15,     # momentum_6m
+            'moat': 0.10          # subjective / placeholder
+        }
+
+    rows = []
+    # compute sector medians or simple normalization across universe
+    pe_list = []
+    growth_list = []
+    vol_list = []
+    mom_list = []
+
+    for t, info in stock_info.items():
+        fin = info.get('financials', {})
+        met = info.get('metrics', {})
+        fpe = fin.get('forwardPE') or fin.get('trailingPE') or np.nan
+        pe_list.append(np.nan if fpe is None else fpe)
+        growth_list.append(met.get('1y_return') if met else np.nan)
+        vol_list.append(met.get('annual_volatility') if met else np.nan)
+        mom_list.append(met.get('momentum_6m') if met else np.nan)
+
+    # to avoid division by zero / nan, use simple scaling
+    pe_arr = np.array([np.nanmean(pe_list) if np.isnan(x) else x for x in pe_list], dtype=float)
+    # We'll compute Z-scores where appropriate
+    def zscore(arr):
+        arr = np.array(arr, dtype=float)
+        arr_mean = np.nanmean(arr)
+        arr_std = np.nanstd(arr)
+        if arr_std == 0:
+            arr_std = 1.0
+        return (arr - arr_mean) / arr_std
+
+    pe_z = zscore(pe_list)  # higher P/E -> worse (we'll negate)
+    growth_z = zscore(growth_list)
+    vol_z = zscore(vol_list)
+    mom_z = zscore(mom_list)
+
+    idx = 0
+    for t, info in stock_info.items():
+        fin = info.get('financials', {})
+        met = info.get('metrics', {})
+        moat = info.get('moat', 0.5)  # default neutral
+
+        score = 0.0
+        # growth: higher is better
+        score += weights['growth'] * (growth_z[idx] if not np.isnan(growth_z[idx]) else 0)
+        # valuation: lower PE -> better, so negate z
+        score += weights['valuation'] * (-pe_z[idx] if not np.isnan(pe_z[idx]) else 0)
+        # volatility: lower vol better -> negate z
+        score += weights['volatility'] * (-vol_z[idx] if not np.isnan(vol_z[idx]) else 0)
+        # momentum: higher better
+        score += weights['momentum'] * (mom_z[idx] if not np.isnan(mom_z[idx]) else 0)
+        # moat
+        score += weights['moat'] * moat
+
+        rows.append({
+            'ticker': t,
+            'score': float(score),
+            'forwardPE': fin.get('forwardPE'),
+            'trailingPE': fin.get('trailingPE'),
+            'marketCap': fin.get('marketCap'),
+            'beta': fin.get('beta'),
+            '1y_return': met.get('1y_return') if met else None,
+            'annual_volatility': met.get('annual_volatility') if met else None
+        })
+        idx += 1
+
+    df = pd.DataFrame(rows).sort_values('score', ascending=False).reset_index(drop=True)
+    return df
+
+
+# -----------------------------
+# Portfolio construction
+# -----------------------------
+
+def construct_portfolio(scores_df, max_single=0.15, total_active=0.6, cash_buffer=0.2):
+    """Simple allocation: allocate more to higher-scoring names subject to max_single.
+    total_active: fraction of total equity assigned to active picks; rest is cash/bonds.
+    Returns allocations dict ticker->fraction_of_portfolio
+    """
+    # normalize positive scores
+    df = scores_df.copy()
+    # shift scores to positive
+    min_score = df['score'].min()
+    df['pos_score'] = df['score'] - min_score + 1e-6
+    df['raw_alloc'] = df['pos_score'] / df['pos_score'].sum()
+    # scale to total_active
+    df['alloc'] = df['raw_alloc'] * total_active
+
+    # enforce max single
+    df['alloc_capped'] = df['alloc'].apply(lambda x: min(x, max_single))
+    # if capping reduced sum, redistribute residual proportionally among uncapped
+    capped_sum = df['alloc_capped'].sum()
+    residual = total_active - capped_sum
+    if residual > 1e-8:
+        uncapped_mask = df['alloc'] < max_single
+        uncapped_sum = df.loc[uncapped_mask, 'alloc'].sum()
+        if uncapped_sum > 0:
+            df.loc[uncapped_mask, 'alloc_capped'] += df.loc[uncapped_mask, 'alloc'] / uncapped_sum * residual
+        else:
+            # all were capped; scale down proportionally
+            df['alloc_capped'] = df['alloc_capped'] * (total_active / capped_sum)
+
+    # final allocations include cash buffer
+    allocations = dict(zip(df['ticker'], df['alloc_capped']))
+    allocations['_cash'] = cash_buffer
+    # normalize to 1.0
+    total = sum(allocations.values())
+    for k in allocations.keys():
+        allocations[k] = allocations[k] / total
+    return allocations
+
+
+# -----------------------------
+# Report generation
+# -----------------------------
+
+def plot_price_with_momentum(prices_df, ticker):
+    close = prices_df['Close'].dropna()
+    if close.empty:
+        return None
+    fig, ax = plt.subplots(figsize=(8, 3.5))
+    ax.plot(close.index, close.values)
+    ax.set_title(f'{ticker} Close Price')
+    ax.set_ylabel('Price')
+    ax.grid(True)
+    buf = io.BytesIO()
+    fig.tight_layout()
+    fig.savefig(buf, format='png')
+    plt.close(fig)
+    buf.seek(0)
+    return buf
+
+
+def generate_pdf_report(filename, summary, scores_df, allocations, price_plots):
+    c = canvas.Canvas(filename, pagesize=letter)
+
+    width, height = letter
+    margin = 40
+    y = height - margin
+
+    c.setFont('Helvetica-Bold', 16)
+    c.drawString(margin, y, 'Investment Analysis & Proposed Portfolio')
+    y -= 30
+
+    c.setFont('Helvetica', 10)
+    c.drawString(margin, y, f'Date: {datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")}')
+    y -= 20
+
+    # summary
+    text = c.beginText(margin, y)
+    text.setLeading(12)
+    for line in summary.split('\n'):
+        text.textLine(line)
+    c.drawText(text)
+    y = text.getY() - 10
+
+    # table: top scores
+    c.setFont('Helvetica-Bold', 12)
+    c.drawString(margin, y, 'Top Scored Stocks:')
+    y -= 16
+    c.setFont('Helvetica', 9)
+
+    # write table header
+    header = ['Ticker', 'Score', '1y_ret', 'ann_vol', 'fwdPE']
+    col_x = [margin, margin+60, margin+120, margin+200, margin+280]
+    for i, h in enumerate(header):
+        c.drawString(col_x[i], y, h)
+    y -= 12
+
+    for _, row in scores_df.head(10).iterrows():
+        c.drawString(col_x[0], y, str(row['ticker']))
+        c.drawString(col_x[1], y, f"{row['score']:.3f}")
+        c.drawString(col_x[2], y, f"{(row['1y_return'] or 0)*100:.1f}%")
+        c.drawString(col_x[3], y, f"{(row['annual_volatility'] or 0):.2f}")
+        c.drawString(col_x[4], y, f"{row['forwardPE'] or row['trailingPE']}")
+        y -= 12
+        if y < 150:
+            c.showPage()
+            y = height - margin
+
+    # allocations
+    if y < 250:
+        c.showPage()
+        y = height - margin
+    c.setFont('Helvetica-Bold', 12)
+    c.drawString(margin, y, 'Suggested Portfolio Allocation:')
+    y -= 18
+    c.setFont('Helvetica', 10)
+    for k, v in allocations.items():
+        c.drawString(margin, y, f'{k}: {v*100:.1f}%')
+        y -= 12
+
+    # add price plots
+    for t, buf in price_plots.items():
+        if y < 200:
+            c.showPage()
+            y = height - margin
+        c.drawImage(ImageReader(buf), margin, y-180, width=500, height=180, preserveAspectRatio=True)
+        y -= 200
+
+    c.save()
+
+
+# -----------------------------
+# Main routine to wire everything
+# -----------------------------
+
+def run_pipeline(tickers, start, end, newsapi_key=None, output_prefix='investment_report'):
+    # 1. fetch data
+    print('Fetching price history...')
+    prices = fetch_price_history(tickers, start, end)
+
+    print('Fetching financials...')
+    stock_info = {}
+    for t in tickers:
+        fin = fetch_basic_financials(t)
+        met = None
+        if t in prices and not prices[t].empty:
+            met = compute_metrics(t, prices[t])
+        # naive moat proxy: market cap > X or known leaders -> higher moat; override per ticker if needed
+        market_cap = fin.get('marketCap') or 0
+        moat = 0.5
+        if market_cap and market_cap > 200e9:
+            moat = 0.9
+        elif market_cap and market_cap > 50e9:
+            moat = 0.7
+        stock_info[t] = {'financials': fin, 'metrics': met, 'moat': moat}
+
+    # optional: fetch news for each
+    news = {}
+    if newsapi_key:
+        for t in tickers:
+            news[t] = fetch_news_for_ticker(t, newsapi_key)
+
+    # 2. score universe
+    print('Scoring stocks...')
+    scores_df = score_stocks(stock_info)
+
+    # 3. portfolio construct
+    allocations = construct_portfolio(scores_df)
+
+    # 4. plots
+    price_plots = {}
+    for t in tickers:
+        if t in prices and not prices[t].empty:
+            buf = plot_price_with_momentum(prices[t], t)
+            if buf:
+                price_plots[t] = buf
+
+    # 5. summary & report
+    summary = (
+        'This report is generated by an automated quantitative pipeline.\n'
+        'It ranks tickers by blended scores (growth, valuation, volatility, momentum, moat).\n'
+        'Allocations are suggested subject to a max single-name cap and a cash buffer.\n'
+        'Use licensed market data and broker connectivity for production order execution.'
+    )
+
+    pdf_file = f'{output_prefix}.pdf'
+    print(f'Generating PDF report: {pdf_file}')
+    generate_pdf_report(pdf_file, summary, scores_df, allocations, price_plots)
+
+    # save CSVs
+    scores_df.to_csv(f'{output_prefix}_scores.csv', index=False)
+    alloc_df = pd.DataFrame(list(allocations.items()), columns=['ticker', 'alloc'])
+    alloc_df.to_csv(f'{output_prefix}_allocations.csv', index=False)
+
+    print('Done. Outputs:')
+    print(f' - {pdf_file}')
+    print(f' - {output_prefix}_scores.csv')
+    print(f' - {output_prefix}_allocations.csv')
+    if newsapi_key:
+        print(' - News fetched (not saved).')
+
+    return {
+        'scores': scores_df,
+        'allocations': allocations,
+        'pdf': pdf_file
+    }
+
+
+# -----------------------------
+# CLI
+# -----------------------------
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Run investment analysis pipeline')
+    parser.add_argument('--tickers', nargs='+', required=True, help='Tickers to analyze, e.g., NVDA ASML MSFT NEE ENPH')
+    parser.add_argument('--start', type=str, default=(datetime.utcnow() - timedelta(days=365)).strftime('%Y-%m-%d'))
+    parser.add_argument('--end', type=str, default=datetime.utcnow().strftime('%Y-%m-%d'))
+    parser.add_argument('--newsapi', type=str, default=os.getenv('NEWSAPI_KEY'), help='NewsAPI key (optional)')
+    parser.add_argument('--out', type=str, default='investment_report', help='Output file prefix')
+
+    args = parser.parse_args()
+    run_pipeline(args.tickers, args.start, args.end, newsapi_key=args.newsapi, output_prefix=args.out)
