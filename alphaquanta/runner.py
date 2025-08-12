@@ -11,7 +11,6 @@ import os
 import time
 from pathlib import Path
 from typing import Optional, Dict, Any
-from datetime import datetime
 
 from alphaquanta.agents.lean_core_agent import LeanCoreAgent
 from alphaquanta.telemetry.acu_tracker import ACUTracker
@@ -79,7 +78,7 @@ def main(mode: str, quantum: str, acu_cap: int, symbol: str, start: str, end: st
             verbose=verbose
         ))
         
-        click.echo(f"\n📊 Session Results:")
+        click.echo("\n📊 Session Results:")
         click.echo(f"   ACU Used: {acu_tracker.total_used}/{acu_cap}")
         if qpu_tracker:
             click.echo(f"   QPU Time: {qpu_tracker.total_used:.2f}/{qpu_tracker.budget} minutes")

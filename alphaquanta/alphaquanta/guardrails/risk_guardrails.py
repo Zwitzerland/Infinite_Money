@@ -2,13 +2,12 @@
 Risk guardrails engine for trade validation and safety checks.
 """
 
-import asyncio
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 from datetime import datetime, timedelta
 import logging
 from dataclasses import dataclass
 
-from ..models import TradeSignal, OrderSide
+from ..models import TradeSignal
 
 logger = logging.getLogger(__name__)
 

@@ -3,14 +3,11 @@ Quantum Value-at-Risk (VaR) calculation using amplitude estimation.
 """
 
 import numpy as np
-import torch
 from qiskit import QuantumCircuit, transpile
-from qiskit.circuit import Parameter
 from qiskit_ibm_runtime import QiskitRuntimeService, Sampler, Session
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 import logging
 import time
-import asyncio
 from scipy import stats
 
 logger = logging.getLogger(__name__)
@@ -34,7 +31,7 @@ class QuantumVaRCalculator:
                     token=self.ibm_config['token'],
                     instance=self.ibm_config.get('instance', 'ibm-q/open/main')
                 )
-                logger.info(f"Initialized Qiskit Runtime for VaR calculation")
+                logger.info("Initialized Qiskit Runtime for VaR calculation")
             except Exception as e:
                 logger.warning(f"Failed to initialize Qiskit Runtime: {e}")
                 self.service = None

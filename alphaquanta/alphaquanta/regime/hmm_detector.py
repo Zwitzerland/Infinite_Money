@@ -5,10 +5,9 @@ Implements Baum-Welch training and Viterbi decoding for market regime identifica
 
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, Tuple, Any
 import logging
-from datetime import datetime, timedelta
-import asyncio
+from datetime import datetime
 import time
 from scipy.stats import multivariate_normal
 from sklearn.preprocessing import StandardScaler

@@ -3,10 +3,9 @@ Diffusion-based time series forecasting for volatility prediction.
 """
 
 import asyncio
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 import numpy as np
 import logging
-from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 

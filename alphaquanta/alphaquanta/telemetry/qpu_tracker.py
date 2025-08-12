@@ -3,7 +3,7 @@ QPU (Quantum Processing Unit) time tracking for quantum operations.
 """
 
 import time
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 from datetime import datetime
 import logging
 import json

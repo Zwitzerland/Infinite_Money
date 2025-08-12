@@ -5,7 +5,6 @@ Tracks compute usage and generates reports for CI validation.
 """
 
 import json
-import time
 import argparse
 from datetime import datetime, timezone
 from pathlib import Path

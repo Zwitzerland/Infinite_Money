@@ -2,14 +2,12 @@
 LeanCoreAgent - Single omni-agent for quantum-hybrid trading signals and execution.
 """
 
-import asyncio
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 import logging
-import json
 import numpy as np
 
-from ..models import TradingMode, TradeSet, TradeSignal, BacktestResult, OrderSide, OrderType
+from ..models import TradingMode, TradeSignal, BacktestResult, OrderSide, OrderType
 from ..tools.data_tools import QuantConnectDataTool, MarketDataTool
 from ..tools.action_tools import IBOrderRouter, LeanBacktestRunner, PositionSizer
 from ..guardrails.risk_guardrails import RiskGuardrailEngine

@@ -3,10 +3,9 @@ QAOA-based portfolio optimization for quantum-enhanced alpha discovery.
 """
 
 import asyncio
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 import numpy as np
 import logging
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 

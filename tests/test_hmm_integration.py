@@ -2,19 +2,21 @@
 Comprehensive HMM integration tests for Quantum Apex Money Engine 2.0.
 """
 
-import pytest
 import asyncio
+import pytest
 import numpy as np
 import pandas as pd
+from datetime import datetime, timedelta
+from typing import Dict, Any
 from unittest.mock import Mock, AsyncMock
 
-from alphaquanta.alphaquanta.regime.hmm_detector import MarketRegimeDetector
-from alphaquanta.alphaquanta.quantum.qaoa_optimizer import QAOABasketOptimizer
-from alphaquanta.alphaquanta.agents.lean_core_agent import LeanCoreAgent
-from alphaquanta.alphaquanta.guardrails.risk_guardrails import HMMRegimeGuardrail
-from alphaquanta.alphaquanta.telemetry.pnl_monitor import PnLMonitor
-from alphaquanta.alphaquanta.telemetry.qpu_tracker import QPUTracker
-from alphaquanta.alphaquanta.models import TradeSignal, OrderSide, OrderType
+from alphaquanta.regime.hmm_detector import MarketRegimeDetector
+from alphaquanta.quantum.qaoa_optimizer import QAOABasketOptimizer
+from alphaquanta.agents.lean_core_agent import LeanCoreAgent
+from alphaquanta.guardrails.risk_guardrails import HMMRegimeGuardrail
+from alphaquanta.telemetry.pnl_monitor import PnLMonitor
+from alphaquanta.telemetry.qpu_tracker import QPUTracker
+from alphaquanta.models import TradeSignal, OrderSide, OrderType
 
 
 class TestHMMIntegration:

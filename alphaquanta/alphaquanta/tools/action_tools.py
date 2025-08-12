@@ -3,7 +3,7 @@ Action tools for Interactive Brokers execution and Lean backtesting.
 """
 
 import asyncio
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 from datetime import datetime
 import logging
 import uuid

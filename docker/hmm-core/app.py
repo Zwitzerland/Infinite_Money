@@ -4,13 +4,11 @@ HMM Core Microservice - Fast regime detection with <10ms latency.
 
 import os
 import json
-import asyncio
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import List
 
 import redis
 import numpy as np
-import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uvicorn
@@ -99,8 +97,8 @@ async def get_metrics():
         for i, prob in enumerate(state_probs):
             metrics.append(f'hmm_state_prob{{state="{i}"}} {prob}')
         
-        metrics.append(f'hmm_detection_latency_ms 5.2')
-        metrics.append(f'hmm_cache_hit_rate 0.85')
+        metrics.append('hmm_detection_latency_ms 5.2')
+        metrics.append('hmm_cache_hit_rate 0.85')
         
         return "\n".join(metrics)
         

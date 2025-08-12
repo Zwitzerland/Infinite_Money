@@ -2,9 +2,8 @@
 Data tools for QuantConnect API integration and market data feeds.
 """
 
-import asyncio
 from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import yfinance as yf
 import numpy as np

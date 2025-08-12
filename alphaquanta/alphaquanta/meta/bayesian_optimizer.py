@@ -3,11 +3,9 @@ Bayesian meta-learner for hyperparameter optimization of quantum-hybrid trading 
 """
 
 import numpy as np
-import torch
 from typing import Dict, List, Optional, Tuple, Any, Callable
 import logging
 import time
-import asyncio
 from scipy.optimize import minimize
 from scipy.stats import norm
 import json
