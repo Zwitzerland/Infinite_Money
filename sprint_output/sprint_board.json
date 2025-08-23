@@ -1,0 +1,174 @@
+{
+  "sprint_info": {
+    "name": "Sprint Alpha",
+    "version": "Q-v2",
+    "start_date": "2025-07-19T12:46:19.378411",
+    "end_date": "2025-08-02T12:46:19.378411",
+    "duration_days": 14,
+    "budget": {
+      "total_acu": 6.5,
+      "total_qpu_minutes": 3.0,
+      "buffer_percent": 15
+    },
+    "objectives": [
+      "Deploy UAT enclave with live EDGAR + Polygon feeds",
+      "Implement QPU throttling and billing hooks",
+      "Add Diffusion-Forecast AlphaModule for volatility plays",
+      "Enable quantum Monte-Carlo VaR with kill-switch",
+      "Set up comprehensive Grafana monitoring dashboards",
+      "Complete end-to-end soak testing with HITL drills"
+    ]
+  },
+  "task_matrix": [
+    {
+      "day_range": "D1-D2",
+      "owner": "Infra",
+      "deliverable": "UAT cluster IaC (Terraform)",
+      "compute_limit": "0.8 ACU",
+      "kpi": "Green CI",
+      "priority": "High",
+      "dependencies": [],
+      "estimated_hours": 16,
+      "status": "Not Started"
+    },
+    {
+      "day_range": "D3-D4",
+      "owner": "Data",
+      "deliverable": "Live feed plumbing (EDGAR, Polygon)",
+      "compute_limit": "1.2 ACU",
+      "kpi": "0 pkt loss",
+      "priority": "High",
+      "dependencies": [
+        "UAT cluster IaC"
+      ],
+      "estimated_hours": 20,
+      "status": "Not Started"
+    },
+    {
+      "day_range": "D5-D6",
+      "owner": "Quantum",
+      "deliverable": "QPU throttle & billing hooks",
+      "compute_limit": "0.6 ACU / 0.5 QPU",
+      "kpi": "Alert \u2264 80% quota",
+      "priority": "Medium",
+      "dependencies": [
+        "Live feed plumbing"
+      ],
+      "estimated_hours": 14,
+      "status": "Not Started"
+    },
+    {
+      "day_range": "D7-D8",
+      "owner": "Strat",
+      "deliverable": "Diffusion module PoC",
+      "compute_limit": "1.4 ACU",
+      "kpi": "\u0394Sharpe +0.05",
+      "priority": "Medium",
+      "dependencies": [
+        "QPU throttle & billing hooks"
+      ],
+      "estimated_hours": 18,
+      "status": "Not Started"
+    },
+    {
+      "day_range": "D9-D10",
+      "owner": "Risk",
+      "deliverable": "VaR + kill-switch",
+      "compute_limit": "0.7 ACU",
+      "kpi": "<30 ms trigger",
+      "priority": "High",
+      "dependencies": [
+        "Diffusion module PoC"
+      ],
+      "estimated_hours": 12,
+      "status": "Not Started"
+    },
+    {
+      "day_range": "D11-D12",
+      "owner": "Ops",
+      "deliverable": "Grafana dashboards",
+      "compute_limit": "0.3 ACU",
+      "kpi": "P95 \u2264 1s",
+      "priority": "Low",
+      "dependencies": [
+        "VaR + kill-switch"
+      ],
+      "estimated_hours": 8,
+      "status": "Not Started"
+    },
+    {
+      "day_range": "D13-D14",
+      "owner": "QA",
+      "deliverable": "End-to-end soak, HITL drills",
+      "compute_limit": "0.5 ACU",
+      "kpi": "Pass 100%",
+      "priority": "High",
+      "dependencies": [
+        "Grafana dashboards"
+      ],
+      "estimated_hours": 16,
+      "status": "Not Started"
+    }
+  ],
+  "owners": [
+    "Infra",
+    "QA",
+    "Data",
+    "Quantum",
+    "Risk",
+    "Strat",
+    "Ops"
+  ],
+  "compute_budget": {
+    "total_acu": 5.5,
+    "total_qpu": 0.5,
+    "by_owner": {
+      "Infra": {
+        "acu": 0.8,
+        "qpu": 0.0
+      },
+      "Data": {
+        "acu": 1.2,
+        "qpu": 0.0
+      },
+      "Quantum": {
+        "acu": 0.6,
+        "qpu": 0.5
+      },
+      "Strat": {
+        "acu": 1.4,
+        "qpu": 0.0
+      },
+      "Risk": {
+        "acu": 0.7,
+        "qpu": 0.0
+      },
+      "Ops": {
+        "acu": 0.3,
+        "qpu": 0.0
+      },
+      "QA": {
+        "acu": 0.5,
+        "qpu": 0.0
+      }
+    }
+  },
+  "milestones": [
+    {
+      "name": "UAT Environment Ready",
+      "date": "D4",
+      "description": "Isolated UAT enclave operational with live feeds"
+    },
+    {
+      "name": "Quantum Integration Complete",
+      "date": "D8",
+      "description": "QPU throttling and Diffusion module deployed"
+    },
+    {
+      "name": "Production Readiness",
+      "date": "D14",
+      "description": "All systems validated and ready for go-live"
+    }
+  ],
+  "generated_at": "2025-07-19T12:46:19.378427"
+}

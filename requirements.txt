@@ -1,0 +1,25 @@
+polars
+pyarrow
+duckdb
+ccxt
+dimod
+optuna
+pytest
+pytest-asyncio
+ruff
+pydantic
+pandas
+scipy
+scikit-learn
+yfinance
+click
+pyyaml
+
+# Optional extras (install as needed):
+# torch
+# stable-baselines3
+# ray[tune]
+
+
+
+
