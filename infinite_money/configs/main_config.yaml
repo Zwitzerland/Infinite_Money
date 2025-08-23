@@ -1,0 +1,204 @@
+# Infinite_Money Main Configuration
+# Autonomous Quantum Trading System
+
+system:
+  name: "Infinite_Money"
+  version: "1.0.0"
+  mode: "autonomous"  # autonomous, supervised, backtest, research
+  quantum_enabled: true
+  gpu_acceleration: true
+  debug_mode: false
+  
+  # Performance settings
+  max_concurrent_tasks: 10
+  memory_limit_gb: 32
+  cpu_cores: 8
+  
+  # Logging
+  log_level: "INFO"
+  log_file: "logs/infinite_money.log"
+  enable_structured_logging: true
+
+agents:
+  chief_architect:
+    enabled: true
+    update_frequency_minutes: 5
+    strategy_evolution_rate: 0.1
+    max_strategies_per_generation: 50
+    
+  data_engineer:
+    enabled: true
+    data_sources:
+      - name: "yahoo"
+        enabled: true
+        rate_limit: 1000  # requests per hour
+      - name: "alpha_vantage"
+        enabled: true
+        rate_limit: 500
+      - name: "polygon"
+        enabled: true
+        rate_limit: 5000
+      - name: "binance"
+        enabled: true
+        rate_limit: 1200
+    data_retention_days: 365
+    real_time_enabled: true
+    
+  alpha_researcher:
+    enabled: true
+    ml_models:
+      - "transformer"
+      - "lstm"
+      - "quantum_circuit"
+      - "ensemble"
+      - "reinforcement_learning"
+    feature_engineering:
+      enabled: true
+      max_features: 100
+      feature_selection_method: "mutual_info"
+    backtest_window_days: 252
+    min_sharpe_threshold: 0.8
+    
+  portfolio_manager:
+    enabled: true
+    optimization_method: "quantum_annealing"  # quantum_annealing, classical, hybrid
+    rebalancing_frequency: "daily"
+    max_position_size: 0.2
+    min_position_size: 0.01
+    target_volatility: 0.15
+    risk_free_rate: 0.02
+    
+  execution_trader:
+    enabled: true
+    execution_algos:
+      - "twap"
+      - "vwap"
+      - "quantum_optimal"
+      - "adaptive"
+    slippage_model: "realistic"
+    commission_model: "tiered"
+    market_impact_model: "square_root"
+    
+  compliance_officer:
+    enabled: true
+    risk_limits:
+      max_drawdown: 0.15
+      var_95: 0.02
+      max_leverage: 2.0
+      concentration_limit: 0.25
+    trading_hours:
+      start: "09:30"
+      end: "16:00"
+      timezone: "America/New_York"
+    blacklist_symbols: []
+    whitelist_symbols: []
+
+quantum:
+  backend: "qiskit"  # qiskit, cirq, pennylane
+  qubits: 32
+  optimization_level: 2
+  shots: 1000
+  error_mitigation: true
+  
+  algorithms:
+    qaoa:
+      enabled: true
+      max_iterations: 100
+      optimizer: "COBYLA"
+    vqe:
+      enabled: true
+      ansatz: "RealAmplitudes"
+    qsvm:
+      enabled: true
+      feature_map: "ZZFeatureMap"
+    qnn:
+      enabled: true
+      layers: 3
+      activation: "relu"
+
+trading:
+  markets:
+    - name: "US_EQUITIES"
+      enabled: true
+      symbols: ["SPY", "QQQ", "IWM", "GLD", "TLT"]
+    - name: "CRYPTO"
+      enabled: true
+      symbols: ["BTC-USD", "ETH-USD", "ADA-USD"]
+    - name: "FOREX"
+      enabled: true
+      symbols: ["EUR-USD", "GBP-USD", "JPY-USD"]
+      
+  strategy_types:
+    - "momentum"
+    - "mean_reversion"
+    - "statistical_arbitrage"
+    - "quantum_enhanced"
+    - "multi_factor"
+    
+  risk_management:
+    stop_loss: 0.05
+    take_profit: 0.15
+    trailing_stop: true
+    position_sizing: "kelly_criterion"
+
+data:
+  storage:
+    type: "clickhouse"  # clickhouse, postgresql, mongodb
+    host: "localhost"
+    port: 9000
+    database: "infinite_money"
+    
+  cache:
+    type: "redis"
+    host: "localhost"
+    port: 6379
+    ttl_hours: 24
+    
+  real_time:
+    websocket_enabled: true
+    heartbeat_interval: 30
+    reconnect_attempts: 5
+
+monitoring:
+  metrics:
+    enabled: true
+    prometheus_port: 9090
+    grafana_port: 3000
+    
+  alerts:
+    enabled: true
+    channels:
+      - type: "email"
+        recipients: ["admin@infinite-money.com"]
+      - type: "slack"
+        webhook_url: "https://hooks.slack.com/..."
+        
+  dashboards:
+    trading_dashboard: true
+    quantum_metrics: true
+    agent_performance: true
+
+security:
+  encryption:
+    enabled: true
+    algorithm: "AES-256"
+    
+  authentication:
+    enabled: true
+    method: "jwt"
+    token_expiry_hours: 24
+    
+  api_keys:
+    storage: "encrypted_file"
+    rotation_days: 90
+
+development:
+  testing:
+    enabled: true
+    coverage_threshold: 80
+    integration_tests: true
+    
+  profiling:
+    enabled: false
+    memory_profiling: false
+    cpu_profiling: false
