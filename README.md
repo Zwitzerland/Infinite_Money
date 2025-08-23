@@ -1,8 +1,36 @@
-# Infinite_Money: Autonomous Quantum Trading System
+# Infinite_Money: Autonomous Quantum Trading System with Apex Stack v5
 
-> **"The future of trading is autonomous, adaptive, and quantum-ready"**
+> **"The future of trading is autonomous, adaptive, quantum-ready, and mathematically rigorous"**
 
-A next-generation autonomous trading system inspired by ASI-ARCH principles, featuring multi-agent architecture, quantum computing integration, and continuous self-improvement capabilities.
+A next-generation autonomous trading system inspired by ASI-ARCH principles, featuring multi-agent architecture, quantum computing integration, Apex Stack v5 components, and continuous self-improvement capabilities.
+
+## 🚀 **Apex Stack v5 Integration**
+
+This system now incorporates the latest advances in quantitative finance:
+
+### **Distributionally-Robust Kelly Optimization**
+- **Wasserstein-Kelly**: Maximizes worst-case log-growth inside ambiguity balls
+- **CDaR Constraints**: Conditional Drawdown at Risk as hard budget on wealth path
+- **L-VaR Integration**: Liquidity-adjusted Value at Risk for realistic position sizing
+- **Leverage Throttle**: Dynamic leverage that breathes with uncertainty
+
+### **Quantum Risk Acceleration**
+- **IQAE**: Iterative Quantum Amplitude Estimation for faster VaR/CVaR/PFE
+- **Error Mitigation**: Twirling, dynamical decoupling, measurement mitigation, ZNE
+- **Auto-Fallback**: Automatic fallback to classical methods if quantum bias/variance breaches thresholds
+- **Wall-Clock Parity**: Hourly tests vs Monte Carlo for validation
+
+### **Martingale Optimal Transport Superhedging**
+- **Robust Price Bands**: Computes price/hedge bands with frictions
+- **No-Arbitrage Safety**: Formal blast shield against tail model error
+- **Superhedging Admissibility**: Every trade must clear MOT constraints
+- **Duality Feasibility**: Continuous logging of dual feasibility
+
+### **Microstructure Edge**
+- **DeepLOB + HLOB/TLOB**: Transformer successors for queue toxicity
+- **Short-Horizon Signals**: Captures microstructure moves across NASDAQ-style L2
+- **Toxicity Analysis**: Real-time queue toxicity and market pressure
+- **Ensemble Diversity**: Multiple model architectures for robustness
 
 ## 🚀 Key Features
 
