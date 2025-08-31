@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  lean-engine:
+    image: quantconnect/lean:latest
+    container_name: infinite-money-engine
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    volumes:
+      - ./src:/Lean/Algorithm
+      - ./data:/Lean/Data
+      - ./results:/Lean/Results
+      - ./logs:/Lean/Logs
+    environment:
+      - LEAN_CONFIG_FILE=/Lean/lean.json
+    command: lean engine --environment local
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: infinite-money-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: infinite-money-postgres
+    environment:
+      POSTGRES_DB: infinite_money
+      POSTGRES_USER: lean
+      POSTGRES_PASSWORD: lean_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  influxdb:
+    image: influxdb:2.6-alpine
+    container_name: infinite-money-influxdb
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: adminpassword
+      DOCKER_INFLUXDB_INIT_ORG: infinite_money
+      DOCKER_INFLUXDB_INIT_BUCKET: trading_data
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:9.0.0
+    container_name: infinite-money-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - influxdb
+    restart: unless-stopped
+
+  jupyter:
+    image: jupyter/datascience-notebook:latest
+    container_name: infinite-money-jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./src:/home/jovyan/work/src
+      - ./data:/home/jovyan/work/data
+      - ./notebooks:/home/jovyan/work/notebooks
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    command: start.sh jupyter lab --LabApp.token='' --LabApp.password=''
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  postgres_data:
+  influxdb_data:
+  grafana_data:
+
+networks:
+  default:
+    name: infinite-money-network

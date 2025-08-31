@@ -1,23 +1,56 @@
-.PHONY: setup lint test smoke train experiment
+# Root Makefile - Delegates to engine/
+.PHONY: help bootstrap data backtest optimize paper live logs test clean
 
-PYTHON ?= python3
+help:
+	@echo "Infinite Money - Root Makefile"
+	@echo "=============================="
+	@echo ""
+	@echo "Available targets:"
+	@echo "  bootstrap  - Setup engine environment"
+	@echo "  data       - Download market data"
+	@echo "  backtest   - Run backtest"
+	@echo "  optimize   - Run optimization"
+	@echo "  paper      - Start paper trading"
+	@echo "  live       - Start live trading"
+	@echo "  logs       - View logs"
+	@echo "  test       - Run tests"
+	@echo "  clean      - Clean build artifacts"
+	@echo ""
+	@echo "All targets delegate to engine/Makefile"
 
-setup:
-	$(PYTHON) -m pip install -U pip
-	$(PYTHON) -m pip install -r requirements.txt
+bootstrap:
+	@echo "Setting up Infinite Money Engine..."
+	cd engine && make bootstrap
 
-lint:
-	ruff check .
+data:
+	@echo "Downloading market data..."
+	cd engine && make data
+
+backtest:
+	@echo "Running backtest..."
+	cd engine && make backtest
+
+optimize:
+	@echo "Running optimization..."
+	cd engine && make optimize
+
+paper:
+	@echo "Starting paper trading..."
+	cd engine && make paper
+
+live:
+	@echo "Starting live trading..."
+	cd engine && make live
+
+logs:
+	@echo "Viewing logs..."
+	cd engine && make logs
 
 test:
-	PYTHONPATH=alphaquanta $(PYTHON) -m pytest -q
+	@echo "Running tests..."
+	cd engine && make test
 
-smoke:
-	PYTHONPATH=alphaquanta:. $(PYTHON) scripts/smoke_backtest.py
-
-train:
-	PYTHONPATH=alphaquanta $(PYTHON) alphaquanta/runner.py --mode backtest --quantum off --symbol SPY --start 2021-01-01 --end 2021-03-01 -v
-
-experiment:
-	@echo "No experiments defined; add your experimental command here."
+clean:
+	@echo "Cleaning build artifacts..."
+	cd engine && make clean
 
