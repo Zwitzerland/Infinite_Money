@@ -1,0 +1,66 @@
+[tool.poetry]
+name = "alphaquanta"
+version = "0.1.0"
+description = "Production-grade agent framework for algorithmic trading"
+authors = ["Devin AI <devin-ai-integration[bot]@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "alphaquanta"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+pydantic = "^2.5.0"
+click = "^8.1.7"
+asyncio = "^3.4.3"
+aiohttp = "^3.9.0"
+pandas = "^2.1.0"
+numpy = "^1.24.0"
+ib-insync = "^0.9.86"
+prometheus-client = "^0.19.0"
+python-dotenv = "^1.0.0"
+yfinance = "^0.2.18"
+qiskit = "^1.0.0"
+qiskit-ibm-runtime = "^0.20.0"
+dwave-ocean-sdk = "^6.9.0"
+scipy = "^1.11.0"
+scikit-learn = "^1.3.0"
+pyyaml = "^6.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+pytest-mock = "^3.12.0"
+black = "^23.0.0"
+isort = "^5.12.0"
+mypy = "^1.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+markers = [
+    "mock: marks tests as mock mode (zero ACU)",
+    "live: marks tests as live mode (real ACU usage)",
+    "integration: marks tests as integration tests",
+    "slow: marks tests as slow running"
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
