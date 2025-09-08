@@ -1,92 +1,14 @@
-# Core Dependencies
-numpy>=1.21.0
-pandas>=1.3.0
-scipy>=1.7.0
-scikit-learn>=1.0.0
-
-# Financial Libraries
-yfinance>=0.1.70
-alpha-vantage>=2.3.1
-quandl>=3.7.0
-
-# Statistical Analysis
-statsmodels>=0.13.0
-arch>=5.0.0
-pykalman>=0.9.5
-
-# Machine Learning
-tensorflow>=2.8.0
-torch>=1.10.0
-xgboost>=1.5.0
-lightgbm>=3.3.0
-
-# Optimization
-cvxpy>=1.2.0
-pulp>=2.6.0
-pyomo>=6.2.0
-
-# Data Processing
-polars>=0.15.0
-vaex>=4.13.0
-dask>=2022.1.0
-
-# Visualization
-matplotlib>=3.5.0
-seaborn>=0.11.0
-plotly>=5.0.0
-bokeh>=2.4.0
-
-# API/Web
-requests>=2.27.0
-aiohttp>=3.8.0
-websockets>=10.0
-
-# Database
-sqlalchemy>=1.4.0
-redis>=4.0.0
-influxdb>=5.3.0
-
-# Configuration/Logging
-pydantic>=1.9.0
-structlog>=21.5.0
-python-dotenv>=0.19.0
-
-# Testing
-pytest>=6.2.0
-pytest-asyncio>=0.18.0
-pytest-cov>=3.0.0
-
-# Code Quality
-black>=22.0.0
-isort>=5.10.0
-flake8>=4.0.0
-mypy>=0.950
-
-# Security
-bandit>=1.7.0
-safety>=1.10.0
-
-# Alternative Data
-newsapi-python>=0.2.6
-tweepy>=4.0.0
-# reddit-api>=1.0.0  # Commented out due to compatibility issues
-
-# Time Series
-pykalman>=0.9.5
-arch>=5.0.0
-
-# Quantum Computing (for future use)
-# qiskit>=0.34.0
-# pennylane>=0.20.0
-
-# Monitoring
-prometheus-client>=0.14.0
-
-# Development
-jupyter>=1.0.0
-ipython>=8.0.0
-notebook>=6.4.0
-
-
-
-
+pandas>=2.2.2
+numpy>=1.26.4
+scikit-learn>=1.5.1
+pyyaml>=6.0.1	mlflow>=2.14.1
+optuna>=3.6.1
+gymnasium>=0.29.1
+stable-baselines3>=2.3.2
+torch>=2.3.1
+qiskit>=1.2.4
+qiskit-optimization>=0.6.1
+ib-insync>=0.9.86
+apscheduler>=3.10.4
+matplotlib>=3.9.1
+pytest>=8.3.2

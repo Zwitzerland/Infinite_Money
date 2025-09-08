@@ -1,0 +1,23 @@
+seed: 1337
+assets: ["AAA", "BBB", "CCC", "DDD"]
+train:
+  timesteps: 200000
+  window: 128
+  gamma: 0.99
+  lr: 3e-4
+  ent_coef: 0.002
+  clip_range: 0.2
+  transaction_cost_bps: 2.0
+backtest:
+  start: "2020-01-01"
+  end: "2024-12-31"
+risk:
+  max_drawdown: 0.08
+  cvar_alpha: 0.95
+scheduler:
+  timezone: "America/New_York"
+paths:
+  artifacts: "artifacts"
+  model_last: "artifacts/ppo_last.zip"
+  backtest_stats: "artifacts/backtest_stats.json"
+  quantum_weights: "artifacts/quantum_weights.json"
