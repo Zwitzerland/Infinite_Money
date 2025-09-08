@@ -1,0 +1,74 @@
+{
+  "algorithm-directory": "src",
+  "algorithm-language": "Python",
+  "data-directory": "data",
+  "debug-mode": false,
+  "composer-dll-directory": ".",
+  "plugin-directory": ".",
+  "job-queue-handler": "QuantConnect.Queues.JobQueue",
+  "api-handler": "QuantConnect.Api.Api",
+  "map-file-provider": "QuantConnect.Data.Auxiliary.LocalDiskMapFileProvider",
+  "factor-file-provider": "QuantConnect.Data.Auxiliary.LocalDiskFactorFileProvider",
+  "data-provider": "QuantConnect.Data.Custom.AlternativeDataProvider",
+  "data-queue-handler": "QuantConnect.Data.Queues.DataQueueHandler",
+  "setup-handler": "QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler",
+  "result-handler": "QuantConnect.Lean.Engine.Results.ConsoleResultHandler",
+  "messaging-handler": "QuantConnect.Lean.Engine.RealTime.Messaging.Messaging",
+  "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BacktestingTransactionHandler",
+  "real-time-handler": "QuantConnect.Lean.Engine.RealTime.RealTimeHandler",
+  "alpha-handler": "QuantConnect.Lean.Engine.Alphas.DefaultAlphaHandler",
+  "master-journal": "master",
+  "logging": {
+    "level": "Info",
+    "file-path": "logs/",
+    "file-number-limit": 30,
+    "file-size-limit": 10485760,
+    "console": true
+  },
+  "job-queue": {
+    "handlers": 1,
+    "job-queue-handler": "QuantConnect.Queues.JobQueue"
+  },
+  "api": {
+    "port": 5000,
+    "host": "localhost"
+  },
+  "data-folder": "data",
+  "results-destination-folder": "results",
+  "plugin-directory": ".",
+  "composer-dll-directory": ".",
+  "algorithm-directory": "src",
+  "algorithm-language": "Python",
+  "debug-mode": false,
+  "job-queue-handler": "QuantConnect.Queues.JobQueue",
+  "api-handler": "QuantConnect.Api.Api",
+  "map-file-provider": "QuantConnect.Data.Auxiliary.LocalDiskMapFileProvider",
+  "factor-file-provider": "QuantConnect.Data.Auxiliary.LocalDiskFactorFileProvider",
+  "data-provider": "QuantConnect.Data.Custom.AlternativeDataProvider",
+  "data-queue-handler": "QuantConnect.Data.Queues.DataQueueHandler",
+  "setup-handler": "QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler",
+  "result-handler": "QuantConnect.Lean.Engine.Results.ConsoleResultHandler",
+  "messaging-handler": "QuantConnect.Lean.Engine.RealTime.Messaging.Messaging",
+  "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BacktestingTransactionHandler",
+  "real-time-handler": "QuantConnect.Lean.Engine.RealTime.RealTimeHandler",
+  "alpha-handler": "QuantConnect.Lean.Engine.Alphas.DefaultAlphaHandler",
+  "master-journal": "master",
+  "logging": {
+    "level": "Info",
+    "file-path": "logs/",
+    "file-number-limit": 30,
+    "file-size-limit": 10485760,
+    "console": true
+  },
+  "job-queue": {
+    "handlers": 1,
+    "job-queue-handler": "QuantConnect.Queues.JobQueue"
+  },
+  "api": {
+    "port": 5000,
+    "host": "localhost"
+  },
+  "data-folder": "data",
+  "results-destination-folder": "results"
+}
+
