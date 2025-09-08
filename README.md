@@ -1,38 +1,25 @@
-# Infinite_Money
+# Infinite_Money — AI Alpha Hive
 
-A comprehensive algorithmic trading system combining quantum computing, machine learning, and traditional quantitative finance.
+Operational scaffold for a federated swarm of RL trading agents with quantum-augmented allocation.
 
-## Engine
-
-The **Infinite Money Engine** is a QuantConnect LEAN-based algorithmic trading system located in `/engine/`. It provides:
-
-- **Statistical Arbitrage**: Mean reversion and pairs trading strategies
-- **Multi-Factor Alpha Models**: Momentum, value, and quality factors
-- **Regime Detection**: Market state identification and adaptation
-- **Kelly Criterion**: Optimal position sizing
-- **Risk Management**: Comprehensive risk controls and stress testing
-- **Alternative Data**: Insider trading and sentiment analysis
-- **AI Integration**: OpenAI sentiment analysis and RL allocation
-
-### Quick Start
-
+## Quick start
 ```bash
-# Setup the engine
-make bootstrap
+bash bootstrap.sh
+# or:
+make setup && make all
 
-# Run a backtest
-make backtest
+Train → Backtest → Select
 
-# Start paper trading
-make paper
-```
+Trains PPO on toy panel, backtests, writes metrics to artifacts/.
 
-### Engine Documentation
+Quantum allocation demo writes artifacts/quantum_weights.json.
 
-- [Engine README](engine/README.md) - Detailed setup and usage
-- [Engine Configuration](engine/lean.json) - LEAN configuration
-- [Engine Tests](engine/tests/) - Test suite
+Next steps
 
-### Tools
+Swap data/prices.csv for Kafka/Delta feeds.
 
-- [Fetch OpenInsider Data](tools/fetch_openinsider.py) - Download Form 4 insider trading data
+Connect IBKR in alpha_hive/executor.py (paper first).
+
+Point MLflow to prod, wire Grafana dashboard.
+
+No system guarantees profits. Operate under your jurisdiction’s regulations.

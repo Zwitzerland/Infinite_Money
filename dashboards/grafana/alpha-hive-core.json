@@ -1,0 +1,10 @@
+{
+  "title": "AI Alpha Hive — Core Metrics",
+  "panels": [
+    {"type": "stat", "title": "Sharpe (backtest)", "id": 1, "targets": []},
+    {"type": "stat", "title": "Max Drawdown", "id": 2, "targets": []},
+    {"type": "stat", "title": "CVaR 95", "id": 3, "targets": []}
+  ],
+  "schemaVersion": 36,
+  "version": 1
+}

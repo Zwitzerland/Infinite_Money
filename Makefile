@@ -1,56 +1,26 @@
-# Root Makefile - Delegates to engine/
-.PHONY: help bootstrap data backtest optimize paper live logs test clean
+SHELL := /bin/bash
+VENV := .venv
+PY := $(VENV)/bin/python
 
-help:
-	@echo "Infinite Money - Root Makefile"
-	@echo "=============================="
-	@echo ""
-	@echo "Available targets:"
-	@echo "  bootstrap  - Setup engine environment"
-	@echo "  data       - Download market data"
-	@echo "  backtest   - Run backtest"
-	@echo "  optimize   - Run optimization"
-	@echo "  paper      - Start paper trading"
-	@echo "  live       - Start live trading"
-	@echo "  logs       - View logs"
-	@echo "  test       - Run tests"
-	@echo "  clean      - Clean build artifacts"
-	@echo ""
-	@echo "All targets delegate to engine/Makefile"
+.PHONY: setup train backtest select quantum schedule all
 
-bootstrap:
-	@echo "Setting up Infinite Money Engine..."
-	cd engine && make bootstrap
+setup:
+	python3 -m venv $(VENV)
+	source $(VENV)/bin/activate && pip install -r requirements.txt
 
-data:
-	@echo "Downloading market data..."
-	cd engine && make data
+train:
+	source $(VENV)/bin/activate && $(PY) -m alpha_hive.rl_forge --config configs/config.yaml --timesteps 50000
 
 backtest:
-	@echo "Running backtest..."
-	cd engine && make backtest
+	source $(VENV)/bin/activate && $(PY) -m alpha_hive.simulator --config configs/config.yaml --model_path artifacts/ppo_last.zip
 
-optimize:
-	@echo "Running optimization..."
-	cd engine && make optimize
+select:
+	source $(VENV)/bin/activate && $(PY) -m alpha_hive.selector --stats_path artifacts/backtest_stats.json
 
-paper:
-	@echo "Starting paper trading..."
-	cd engine && make paper
+quantum:
+	source $(VENV)/bin/activate && $(PY) -m alpha_hive.quantum_opt --csv data/prices.csv --out artifacts/quantum_weights.json
 
-live:
-	@echo "Starting live trading..."
-	cd engine && make live
+schedule:
+	source $(VENV)/bin/activate && $(PY) -m alpha_hive.schedule --config configs/config.yaml
 
-logs:
-	@echo "Viewing logs..."
-	cd engine && make logs
-
-test:
-	@echo "Running tests..."
-	cd engine && make test
-
-clean:
-	@echo "Cleaning build artifacts..."
-	cd engine && make clean
-
+all: setup train backtest select quantum
