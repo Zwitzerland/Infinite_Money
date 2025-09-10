@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "infinite-money"
+version = "0.1.0"
+description = "Event-driven trading platform skeleton"
+requires-python = "==3.11.*"
+dependencies = [
+    "duckdb",
+    "pydantic>=2",
+    "ib_insync",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.black]
+line-length = 88
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+explicit_package_bases = true
