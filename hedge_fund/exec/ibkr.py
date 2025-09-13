@@ -10,7 +10,7 @@ from hedge_fund.backtest.events import FillEvent, OrderEvent
 from .base import ExecutionHandler
 
 if TYPE_CHECKING:  # pragma: no cover - hints only
-    from ib_insync import IB  # type: ignore[import-not-found]
+    from ib_insync import IB
 
 
 @dataclass

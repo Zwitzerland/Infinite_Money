@@ -11,6 +11,9 @@ dependencies = [
     "duckdb",
     "pydantic>=2",
     "ib_insync",
+    "numpy",
+    "pandas",
+    "scikit-learn",
 ]
 
 [project.optional-dependencies]
