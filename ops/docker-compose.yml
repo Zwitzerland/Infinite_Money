@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  lean:
+    image: ${LEAN_IMAGE:-quantconnect/lean:latest}
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - ../:/app
+    working_dir: /app
+    command: ["bash", "-lc", "sleep infinity"]
