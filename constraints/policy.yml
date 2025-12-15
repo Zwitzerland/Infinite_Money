@@ -1,0 +1,8 @@
+constraints:
+  max_gross_leverage: 2.0
+  max_net_exposure: 1.0
+  max_single_name_exposure: 0.05
+  max_sector_exposure: 0.2
+  max_daily_turnover: 0.2
+  max_drawdown: 0.15
+  data_freshness_max_lag_minutes: 30
