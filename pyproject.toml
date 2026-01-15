@@ -9,7 +9,11 @@ description = "Event-driven trading platform skeleton"
 requires-python = "==3.11.*"
 dependencies = [
     "duckdb",
+    "hydra-core",
+    "matplotlib",
     "pydantic>=2",
+    "pydantic-settings>=2",
+    "requests",
     "ib_insync",
     "numpy",
     "pandas",
