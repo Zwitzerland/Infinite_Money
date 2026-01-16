@@ -1,0 +1,4 @@
+source: "gdelt"
+output_path: "artifacts/news/articles.json"
+query: "markets"
+gdelt_gkg_url: "https://api.gdeltproject.org/api/v2/doc/doc?query=market&mode=ArtList&format=json&maxrecords=10"

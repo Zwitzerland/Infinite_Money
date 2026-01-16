@@ -1,0 +1,8 @@
+source: "fred"
+output_path: "artifacts/ingest/output.parquet"
+series_id: "CPIAUCSL"
+start_year: 2018
+end_year: 2024
+treasury_endpoint: "accounting/od/rates_of_exchange"
+gdelt_query: "energy"
+patentsview_query: "{\"_gte\":{\"patent_date\":\"2020-01-01\"}}"
