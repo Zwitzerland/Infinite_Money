@@ -1,0 +1,18 @@
+{
+  "algorithm-language": "Python",
+  "parameters": {
+    "seed": "7",
+    "years": "10",
+    "phi_base": "0.6",
+    "vol_target": "0.22",
+    "d1": "0.07",
+    "d2": "0.31",
+    "leverage": "3.0",
+    "lookback": "30",
+    "ewma_lambda": "0.92",
+    "trade_real": "false",
+    "max_exposure": "1.0"
+  },
+  "description": "G2MAX synthetic backtest (research-only)",
+  "local-id": 0
+}
