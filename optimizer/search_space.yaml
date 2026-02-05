@@ -1,0 +1,35 @@
+parameters:
+  lookback:
+    type: int
+    min: 10
+    max: 60
+    step: 5
+    qc_parameter: lookback
+    description: SMA lookback window for the trend filter.
+  delta:
+    type: float
+    min: 0.1
+    max: 0.5
+    step: 0.05
+    qc_parameter: delta
+    description: Target option delta for covered calls.
+  dte_min:
+    type: int
+    min: 7
+    max: 21
+    step: 7
+    qc_parameter: dte_min
+    description: Minimum days-to-expiration for option selection.
+  dte_max:
+    type: int
+    min: 21
+    max: 42
+    step: 7
+    qc_parameter: dte_max
+    description: Maximum days-to-expiration for option selection.
+objective:
+  target: "Sharpe Ratio"
+  direction: "max"
+constraints:
+  - "Drawdown < 0.25"
+  - "Compounding Annual Return > 0"

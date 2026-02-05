@@ -1,0 +1,54 @@
+objective:
+  target: "cpcv_median_sharpe"
+  direction: "max"
+
+constraints:
+  - "nonzero_days>=250"
+  - "turnover_daily>=0.005"
+
+parameters:
+  pivot_lookback:
+    type: int
+    min: 2
+    max: 10
+    step: 1
+  horizon:
+    type: int
+    min: 5
+    max: 20
+    step: 1
+  zone_atr:
+    type: float
+    min: 0.4
+    max: 1.6
+    step: 0.1
+  tp_atr:
+    type: float
+    min: 0.5
+    max: 2.0
+    step: 0.25
+  sl_atr:
+    type: float
+    min: 0.5
+    max: 2.0
+    step: 0.25
+  level_source:
+    type: categorical
+    choices: ["pivots", "rounds", "avwap"]
+  round_atr_mult:
+    type: categorical
+    choices: [2.0, 4.0, 8.0]
+  min_resolved_events:
+    type: int
+    min: 5
+    max: 30
+    step: 5
+  confidence:
+    type: categorical
+    choices: [0.8, 0.9, 0.95]
+  kelly_fraction:
+    type: categorical
+    choices: [0.1, 0.25, 0.5]
+  use_regime_filter:
+    type: categorical
+    choices: [true, false]
