@@ -11,13 +11,13 @@ pip install -e .[dev]
 ```bash
 ruff check .
 mypy hedge_fund tests
-PYTHONPATH=. pytest -q
+pytest
 ```
 
 ## Backtests
 
 ```bash
-PYTHONPATH=. python -m hedge_fund.backtest.runner --config-path conf --config-name backtest
+python -m hedge_fund.backtest.runner
 ```
 
 ## Rules
