@@ -11,8 +11,12 @@ dependencies = [
     "duckdb",
     "hydra-core",
     "matplotlib",
+    "optuna",
     "pydantic>=2",
     "pydantic-settings>=2",
+    "pyarrow",
+    "pypdf",
+    "pyyaml",
     "requests",
     "ib_insync",
     "numpy",
@@ -25,10 +29,85 @@ dev = [
     "pytest",
     "ruff",
     "mypy",
+    "pandas-stubs",
 ]
+ai = [
+    "torch",
+    "transformers",
+    "sentence-transformers",
+    "lightgbm",
+    "xgboost",
+    "accelerate",
+    "torchmetrics",
+    "pytorch-lightning",
+    "mlflow",
+]
+news = [
+    "newsapi-python",
+    "feedparser",
+]
+quantum = [
+    "amazon-braket-sdk",
+    "amazon-braket-ocean-plugin",
+    "amazon-braket-default-simulator",
+    "pennylane",
+    "pennylane-braket",
+    "qiskit",
+    "qiskit-aer",
+    "qiskit-machine-learning",
+]
+aws = [
+    "boto3",
+    "botocore",
+]
+
+[project.scripts]
+contracts-cli = "hedge_fund.utils.contracts_cli:main"
+g2max-x-lab = "g2max_x_lab:main"
+backtest-runner = "hedge_fund.backtest.runner:main"
+ibkr-smoke-test = "hedge_fund.exec.ibkr_smoke_test:main"
+quantconnect-cli = "control_plane.quantconnect_cli:main"
+ai-stack = "hedge_fund.ai.cli:main"
+ai-export-signals = "hedge_fund.ai.integration.lean_export:main"
+ai-aws = "hedge_fund.ai.aws_cli:main"
+ai-agent-loop = "hedge_fund.ai.agents.loop:main"
+imctl = "tools.imctl.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "hedge_fund*",
+    "control_plane*",
+    "gates*",
+    "mcp_servers*",
+    "optimizer*",
+    "tools*",
+]
+
+[tool.setuptools.package-data]
+"hedge_fund" = ["conf/*.yaml"]
+"optimizer" = ["*.yaml"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 88
+target-version = "py311"
+src = ["hedge_fund", "control_plane", "gates", "mcp_servers", "tools", "tests"]
+extend-exclude = [
+    "lean_projects",
+    ".ralphy-sandboxes",
+    ".ralphy-worktrees",
+    "Trading_Research_Bundle",
+    "outputs",
+    "opencode-quant-platform",
+    "opencode-stack",
+]
 
 [tool.black]
 line-length = 88
@@ -37,3 +116,28 @@ line-length = 88
 python_version = "3.11"
 strict = true
 explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = [
+    "braket.*",
+    "pennylane",
+    "torch",
+    "transformers",
+    "sentence_transformers",
+    "lightgbm",
+    "boto3",
+    "ib_insync",
+    "sklearn.*",
+    "requests",
+    "pandas",
+    "pandas.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["hedge_fund.ai.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["hedge_fund.exec.*"]
+ignore_errors = true
