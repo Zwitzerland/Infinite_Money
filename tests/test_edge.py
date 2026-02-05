@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
-import pandas as pd  # type: ignore[import-untyped]
+import pandas as pd
 
 from hedge_fund.alpha import EdgeModel
 

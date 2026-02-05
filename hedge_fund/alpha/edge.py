@@ -15,8 +15,8 @@ from typing import Iterable, Sequence
 
 import numpy as np
 from numpy.typing import NDArray
-import pandas as pd  # type: ignore[import-untyped]
-from sklearn.linear_model import LassoCV  # type: ignore[import-not-found]
+import pandas as pd
+from sklearn.linear_model import LassoCV
 
 
 def _purged_kfold(

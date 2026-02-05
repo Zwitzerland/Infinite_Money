@@ -6,10 +6,10 @@ robust Kelly sizing, drawdown throttling, and volatility targeting.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+
 from typing import Iterable, Tuple
 
-import matplotlib.pyplot as plt  # type: ignore[import-not-found]
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -69,21 +69,26 @@ def robust_kelly_series(
     d1: float = 0.10,
     d2: float = 0.20,
     leverage: float = 2.5,
+    lookback: int = 60,
+    ewma_lambda: float = 0.94,
 ) -> Tuple[pd.Series, pd.Series, pd.Series]:
     """Return equity, exposure and buy-hold curves."""
 
     r_core = 0.6 * r_mkt.to_numpy() + 0.4 * r_alpha.to_numpy()
     s = pd.Series(r_core, index=r_mkt.index)
-    look = 60
-    mu_hat = s.rolling(look).mean()
-    var_hat = s.rolling(look).var().replace(0.0, np.nan)
-    mu_shrunk = 0.5 * mu_hat.fillna(0.0)
-    f_kelly = (mu_shrunk / var_hat).clip(-leverage, leverage).fillna(0.0)
+    mu_hat = np.asarray(s.rolling(lookback).mean())
+    var_hat = np.asarray(s.rolling(lookback).var())
+    var_hat = np.where(var_hat == 0.0, np.nan, var_hat)
+    mu_shrunk = 0.5 * np.nan_to_num(mu_hat, nan=0.0)
+    f_kelly = np.nan_to_num(mu_shrunk / var_hat, nan=0.0)
+    f_kelly = np.clip(f_kelly, -leverage, leverage)
 
-    roll_total = (1.0 + r_mkt).rolling(252).apply(lambda x: np.prod(x) - 1.0, raw=True)
-    crash_mask = (roll_total < 0).astype(float).fillna(0.0)
+    roll_total = (1.0 + r_mkt).rolling(252).apply(
+        lambda x: np.prod(x) - 1.0, raw=True
+    )
+    crash_mask = np.nan_to_num((roll_total < 0).astype(float).to_numpy())
 
-    lam = 0.94
+    lam = ewma_lambda
     ewvar: list[float] = []
     prev = 0.0
     for r in s.values:
@@ -95,7 +100,7 @@ def robust_kelly_series(
     equity = [1.0]
     exposures: list[float] = []
     peak = 1.0
-    for ri, fk, sc, cm in zip(s.values, f_kelly.values, scale, crash_mask.values):
+    for ri, fk, sc, cm in zip(s.to_numpy(), f_kelly, scale, crash_mask):
         cur = equity[-1]
         peak = max(peak, cur)
         mdd = (peak - cur) / peak if peak > 0 else 0.0
@@ -111,13 +116,26 @@ def robust_kelly_series(
     return eq, pd.Series(exposures, index=s.index, name="Exposure"), bh
 
 
-def run_simulation(seed: int = 7) -> Tuple[pd.Series, pd.Series]:
-    """Run the full G²-MAX-X simulation."""
+def run_simulation(
+    seed: int = 7,
+    years: int = 10,
+    phi_base: float = 0.4,
+    vol_target: float = 0.14,
+    d1: float = 0.10,
+    d2: float = 0.20,
+    leverage: float = 2.5,
+    lookback: int = 60,
+    ewma_lambda: float = 0.94,
+) -> Tuple[pd.Series, pd.Series]:
+    """Run the full G2MAX-X simulation."""
 
     rng = np.random.default_rng(seed)
-    years = 10
     n = 252 * years
-    dates = pd.bdate_range(end=datetime.today().date(), periods=n)
+    # `pd.bdate_range(..., periods=n)` can return n-1 rows when `end` is a
+    # non-business day (e.g. running on a Saturday). Roll back to the latest
+    # business day to keep the simulation length deterministic.
+    end = pd.offsets.BDay().rollback(pd.Timestamp.today().normalize())
+    dates = pd.bdate_range(end=end, periods=n)
     regs = [
         Regime(0.12, 0.18, int(n * 0.28)),
         Regime(0.02, 0.24, int(n * 0.20)),
@@ -127,9 +145,9 @@ def run_simulation(seed: int = 7) -> Tuple[pd.Series, pd.Series]:
     ]
     r_mkt = pd.Series(regime_returns(regs, rng), index=dates, name="mkt")
 
-    roll_mean = r_mkt.rolling(126).mean().fillna(0.0).to_numpy()
+    roll_mean = np.nan_to_num(np.asarray(r_mkt.rolling(126).mean()), nan=0.0)
     expo_momo = np.tanh(roll_mean * 400)
-    r_momo = expo_momo * r_mkt.to_numpy() + rng.normal(0, 0.0005, n)
+    r_momo = expo_momo * np.asarray(r_mkt) + rng.normal(0, 0.0005, n)
 
     lam_events = 0.03
     events = (rng.random(n) < lam_events).astype(float)
@@ -137,8 +155,8 @@ def run_simulation(seed: int = 7) -> Tuple[pd.Series, pd.Series]:
     drift = np.convolve(events, kernel, mode="full")[:n] * 0.0006
     r_rag = drift + rng.normal(0, 0.002, n)
 
-    mean_rev = -0.3 * np.concatenate([[0.0], np.diff(r_mkt.to_numpy())])
-    state_boost = (ewma((r_mkt.to_numpy() > 0).astype(float), 0.9) - 0.5) * 0.002
+    mean_rev = -0.3 * np.concatenate([[0.0], np.diff(np.asarray(r_mkt))])
+    state_boost = (ewma((np.asarray(r_mkt) > 0).astype(float), 0.9) - 0.5) * 0.002
     r_kg = mean_rev + state_boost + rng.normal(0, 0.0012, n)
 
     p = np.array([[0.96, 0.04], [0.08, 0.92]])
@@ -162,7 +180,17 @@ def run_simulation(seed: int = 7) -> Tuple[pd.Series, pd.Series]:
     bandit_w = pd.DataFrame(exp3_alloc(sleeve_df.values), index=dates, columns=sleeve_df.columns)
     r_alpha = (bandit_w * sleeve_df).sum(axis=1)
 
-    eq, _, bh = robust_kelly_series(r_mkt, r_alpha)
+    eq, _, bh = robust_kelly_series(
+        r_mkt,
+        r_alpha,
+        phi_base=phi_base,
+        vol_target=vol_target,
+        d1=d1,
+        d2=d2,
+        leverage=leverage,
+        lookback=lookback,
+        ewma_lambda=ewma_lambda,
+    )
     return eq, bh
 
 
@@ -171,8 +199,8 @@ def main() -> None:
 
     eq, bh = run_simulation()
     plt.figure(figsize=(10, 5))
-    plt.plot(eq.index, eq.values, label="G²-MAX-X")
-    plt.plot(bh.index, bh.values, label="Buy & Hold")
+    plt.plot(eq.index.to_list(), eq.to_list(), label="G²-MAX-X")
+    plt.plot(bh.index.to_list(), bh.to_list(), label="Buy & Hold")
     plt.yscale("log")
     plt.xlabel("Date")
     plt.ylabel("Equity (log scale)")
