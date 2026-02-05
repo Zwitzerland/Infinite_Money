@@ -1,0 +1,6 @@
+symbol: "SPY"
+lookback: 20
+delta: 0.3
+dte_min: 7
+dte_max: 30
+max_drawdown: 0.25

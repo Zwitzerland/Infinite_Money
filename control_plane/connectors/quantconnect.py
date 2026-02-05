@@ -9,7 +9,7 @@ secrets management; do not hardcode credentials.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, Mapping, cast
 
 import requests
 from requests import Response
@@ -84,7 +84,7 @@ class QuantConnectClient:
             timeout=30,
         )
         self._raise_for_status(response)
-        return response.json()
+        return cast(Mapping[str, Any], response.json())
 
     @staticmethod
     def _raise_for_status(response: Response) -> None:

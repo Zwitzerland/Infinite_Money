@@ -1,0 +1,3 @@
+constraints:
+  - "Drawdown < 0.25"
+  - "Compounding Annual Return > 0"

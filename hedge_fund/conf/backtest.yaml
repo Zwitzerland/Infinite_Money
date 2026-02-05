@@ -1,0 +1,5 @@
+seed: 7
+years: 10
+output_path: artifacts/backtest_report.json
+equity_curve_path: artifacts/backtest_equity.csv
+export_equity_curve: true

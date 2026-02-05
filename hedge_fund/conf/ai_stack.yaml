@@ -1,0 +1,135 @@
+news:
+  enabled: false
+  provider: "newsapi"
+  api_key_env: "NEWS_API_KEY"
+  query: "equities OR stocks OR markets"
+  lookback_days: 7
+  max_results: 50
+  language: "en"
+
+filings:
+  enabled: false
+  user_agent_env: "SEC_USER_AGENT"
+  sec_edgar:
+    enabled: false
+    cik_list: []
+  house:
+    enabled: false
+    download_url: ""
+  senate:
+    enabled: false
+    download_url: ""
+
+embeddings:
+  enabled: false
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+
+market_data:
+  enabled: true
+  source: "ibkr"
+  symbols:
+    - "SPY"
+  csv:
+    path: "data/market_data.csv"
+    timestamp_column: "timestamp"
+    symbol_column: "symbol"
+    tz: "UTC"
+  ibkr:
+    host: "127.0.0.1"
+    port: 7497
+    client_id: 7
+    duration: "2 Y"
+    bar_size: "1 day"
+    use_rth: true
+
+features:
+  windows: [10, 20, 50]
+
+labels:
+  horizon: 5
+  vol_window: 20
+
+models:
+  transformer:
+    model_name: "bert-base-uncased"
+    horizon_days: 5
+  gbdt:
+    enabled: true
+  linear:
+    enabled: true
+
+ensemble:
+  method: "weighted"
+  weights:
+    transformer: 0.5
+    gbdt: 0.3
+    linear: 0.2
+
+signal_export:
+  method: "g2max"
+  output_path: "data/custom/ai_signals.csv"
+  rule_window: 20
+  threshold: 0.0
+  model: "linear"
+  min_train: 252
+  retrain_every: 20
+  symbol: "SPY"
+  # Optional: algorithmic support/resistance barrier engine.
+  # Set method: "sr_barrier" to enable.
+  sr_barrier:
+    pivot_lookback: 5
+    train_window: 252
+    horizon: 10
+    zone_atr: 0.6
+    tp_atr: 1.0
+    sl_atr: 1.0
+    cost_atr: 0.05
+    level_source: "pivots" # pivots | rounds | avwap
+    round_atr_mult: 4.0
+    min_resolved_events: 25
+    confidence: 0.95
+    kelly_fraction: 0.25
+    max_exposure: 1.0
+    use_regime_filter: true
+  g2max:
+    phi_base: 0.55
+    vol_target: 0.20
+    drawdown_soft: 0.14
+    drawdown_hard: 0.33
+    leverage: 2.5
+    ewma_lambda: 0.97
+    lookback: 40
+    alpha_mode: "sleeves"
+    alpha_weight: 0.4
+    sleeve_windows: [20, 60, 120]
+
+training:
+  enabled: false
+  split:
+    n_splits: 3
+    purge: 5
+    embargo: 5
+  models:
+    linear:
+      enabled: true
+    gbdt:
+      enabled: true
+  ensemble:
+    weights:
+      linear: 0.4
+      gbdt: 0.6
+
+portfolio:
+  method: "risk_parity"
+  risk_aversion: 1.0
+
+quantum:
+  enabled: false
+  braket_device: "arn:aws:braket:us-east-1::device/qpu/d-wave/Advantage_system6"
+  s3_bucket: "your-braket-bucket"
+  s3_prefix: "braket/experiments"
+
+aws:
+  region: "us-east-1"
+  account_id: "484907500947"
+  artifacts_bucket: "smaze-quantum-bucket"

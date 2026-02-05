@@ -1,0 +1,50 @@
+agents:
+  data: true
+  features: true
+  model: false
+  backtest: true
+  optimization: false
+  quantum: false
+  execution: false
+
+market_data:
+  enabled: false
+  source: "csv"
+  symbols:
+    - "SPY"
+  csv:
+    path: "data/market_data.csv"
+    timestamp_column: "timestamp"
+    symbol_column: "symbol"
+    tz: "UTC"
+
+features:
+  windows: [10, 20, 50]
+
+labels:
+  horizon: 5
+
+training:
+  enabled: false
+  split:
+    n_splits: 3
+    purge: 5
+    embargo: 5
+  models:
+    linear:
+      enabled: true
+    gbdt:
+      enabled: true
+  ensemble:
+    weights:
+      linear: 0.4
+      gbdt: 0.6
+
+signal_export:
+  method: "rule"
+  output_path: "data/custom/ai_signals.csv"
+  rule_window: 20
+  threshold: 0.0
+  model: "linear"
+  min_train: 252
+  retrain_every: 20

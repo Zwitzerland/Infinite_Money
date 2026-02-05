@@ -1,0 +1,33 @@
+market_data:
+  enabled: true
+  source: "csv"
+  symbols: ["SPY"]
+  csv:
+    path: "data/market_data.csv"
+    timestamp_column: "timestamp"
+    symbol_column: "symbol"
+    tz: "UTC"
+
+features:
+  windows: [10, 20, 50]
+
+signal_export:
+  method: "sr_barrier"
+  output_path: "data/custom/ai_signals.csv"
+  threshold: 0.0
+  symbol: "SPY"
+  sr_barrier:
+    pivot_lookback: 5
+    train_window: 252
+    horizon: 10
+    zone_atr: 0.6
+    tp_atr: 1.0
+    sl_atr: 1.0
+    cost_atr: 0.05
+    level_source: "pivots"
+    round_atr_mult: 4.0
+    min_resolved_events: 25
+    confidence: 0.95
+    kelly_fraction: 0.25
+    max_exposure: 1.0
+    use_regime_filter: true

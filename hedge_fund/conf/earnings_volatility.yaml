@@ -1,0 +1,30 @@
+data:
+  path: data/options/earnings_snapshots.csv
+  tz: UTC
+
+strategy:
+  min_days_to_earnings: 5
+  max_days_to_earnings: 20
+  min_iv_rv: 1.25
+  min_volume: 250.0
+  min_open_interest: 500.0
+  max_bid_ask_spread: 0.25
+  min_front_dte: 7
+  max_front_dte: 30
+  min_back_dte: 30
+  min_term_inversion: 0.05
+  min_term_contango: 0.05
+
+execution:
+  starting_equity: 1.0
+  risk_per_trade: 0.02
+  trade_cost: 0.002
+  short_straddle_scale: 1.0
+  calendar_scale: 0.6
+  pnl_cap: 0.5
+  pnl_floor: 0.5
+
+output:
+  report_path: artifacts/earnings_vol_report.json
+  equity_curve_path: artifacts/earnings_vol_equity.csv
+  trades_path: artifacts/earnings_vol_trades.csv

@@ -1,0 +1,9 @@
+symbol: "SPY"
+signal_threshold: 0.0
+signal_mode: "overlay"
+base_exposure: 1.0
+max_exposure: 1.0
+max_drawdown: 0.25
+drawdown_cooldown_days: 20
+start_date: "2016-01-01"
+end_date: "2021-03-31"

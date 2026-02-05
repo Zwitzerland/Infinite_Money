@@ -1,0 +1,11 @@
+config_path: "hedge_fund/conf/ai_stack.yaml"
+output_root: "artifacts/ai_runs"
+
+region: "us-east-1"
+profile: null
+account_id: "484907500947"
+
+s3_bucket: "smaze-quantum-bucket"
+s3_prefix: "infinite-money/ai-runs"
+
+state_machine_arn: "arn:aws:states:us-east-1:484907500947:stateMachine:InfiniteMoneyPipeline"

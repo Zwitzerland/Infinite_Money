@@ -1,0 +1,7 @@
+symbol: "SPY"
+signal_threshold: 0.0
+signal_mode: "exposure"
+max_exposure: 1.0
+max_drawdown: 0.25
+start_date: "2016-01-01"
+end_date: "2021-03-31"
