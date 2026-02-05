@@ -18,6 +18,11 @@ This document outlines the intended Model Context Protocol server surface.
    - submit hybrid jobs
    - poll job status
 
+## Local development
+
+- Implement MCP servers under `mcp_servers/` with small, auditable surfaces.
+- Keep secrets access routed through `mcp_secrets` (no plaintext in configs).
+
 ## Guardrails
 
 - Secrets retrieval should always be audited and logged.

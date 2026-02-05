@@ -1,43 +1,88 @@
 # Infinite Money
 
-Minimal skeleton for an event-driven trading research platform.
+Event-driven trading research platform with LEAN orchestration, backtest tools,
+and an AI signal pipeline. The repo is organized around reproducible workflows
+and strict promotion gates (no direct live trading).
 
 ## Quickstart
 
 ```bash
-pip install -e .[dev]
-ruff check .
-mypy hedge_fund tests
-PYTHONPATH=. pytest -q
+python -m venv .venv
+.venv/Scripts/python -m pip install --upgrade pip
+.venv/Scripts/python -m pip install -e .[dev]
+make doctor
+make test
 ```
 
-## Repository layout
+Prefer a guided setup? See `docs/LOCAL_SETUP.md`.
 
-- `hedge_fund/`: core research, backtest, execution, risk, and utilities.
-- `control_plane/`: orchestration service for compile/backtest/live automation.
-- `mcp_servers/`: Model Context Protocol tool integrations.
-- `gates/`: promotion gate schemas and logic.
-- `artifacts/`: lightweight examples of generated artifacts.
-- `docs/`: operating doctrine, architecture, contracts, and runbooks.
-- `docs/mcp_servers.md`: MCP server surface map.
+## Core workflows
 
-## Example
-
-```python
-from hedge_fund.backtest.events import OrderEvent, OrderSide
-from hedge_fund.exec.simulated import SimulatedExecutionHandler
-
-handler = SimulatedExecutionHandler({"AAPL": 100.0})
-order = OrderEvent("AAPL", OrderSide.BUY, 100, 1_692_000_000)
-fill = handler.place_order(order)
-print(fill)
-```
-
-## Contracts and doctrine
+Backtest (synthetic G2MAX-X example):
 
 ```bash
-python -m hedge_fund.utils.contracts_cli --config-path conf --config-name contracts
+python -m hedge_fund.backtest.runner
 ```
 
-See `docs/` for the operating doctrine, architecture diagram, contracts, and
-runbook.
+LEAN backtest (local):
+
+```bash
+imctl backtest --project lean_projects/DividendCoveredCall --params configs/lean/covered_call_params.yaml
+```
+
+Optimization (Optuna + LEAN):
+
+```bash
+imctl optimize --project lean_projects/DividendCoveredCall --study local-opt --n-trials 20
+```
+
+AI pipeline:
+
+```bash
+python -m hedge_fund.ai.cli --config hedge_fund/conf/ai_stack.yaml
+```
+
+Signals → LEAN export:
+
+```bash
+python -m hedge_fund.ai.integration.lean_export --config hedge_fund/conf/ai_stack.yaml
+```
+
+IBKR connectivity smoke test:
+
+```bash
+python -m hedge_fund.exec.ibkr_smoke_test --host 127.0.0.1 --port 7497 --client-id 1
+```
+
+QuantConnect CLI:
+
+```bash
+python -m control_plane.quantconnect_cli compile --project-id 123456 --name "smoke-compile"
+```
+
+## Configuration
+
+- `hedge_fund/conf/` holds platform defaults (backtest, contracts, AI stack).
+- Use `configs/` for LEAN project parameterization and optimization constraints.
+
+## Repo layout
+
+- `hedge_fund/`: core research, backtest, execution, AI, utilities.
+- `control_plane/`: QuantConnect orchestration and connectors.
+- `optimizer/`: Optuna + LEAN optimization tooling.
+- `tools/`: repo CLIs (`imctl`).
+- `lean_projects/`: LEAN templates.
+- `gates/`: promotion gate schema + rules.
+- `docs/`: documentation and doctrine.
+
+## Documentation
+
+- `docs/INDEX.md` (start here)
+- `docs/LOCAL_SETUP.md` (setup walkthrough)
+- `docs/STRUCTURE.md` (repo organization)
+- `docs/runbook.md` (operational commands)
+
+## Policy
+
+Live trading is not wired here. All live deployment must flow through promotion
+gates and control-plane automation.

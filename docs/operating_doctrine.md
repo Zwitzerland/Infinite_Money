@@ -1,5 +1,7 @@
 # Operating Doctrine (Initial)
 
+Current as of 2026-01-21.
+
 This document captures the initial operating doctrine for the Infinite Money
 platform. It encodes the first-pass system goals, reality constraints, and
 promotion gates to prevent unbounded self-modification.

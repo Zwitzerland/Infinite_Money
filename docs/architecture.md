@@ -26,3 +26,10 @@ flowchart LR
         Braket --> Backtests
     end
 ```
+
+## Repo mapping
+
+- `hedge_fund/`: research, backtest primitives, execution, and utilities.
+- `control_plane/`: orchestration of compile/backtest/live flows.
+- `gates/`: promotion gate schemas and evaluation payloads.
+- `mcp_servers/`: Model Context Protocol integrations.
