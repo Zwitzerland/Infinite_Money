@@ -25,11 +25,14 @@ def _serialize_bundle(bundle: DictConfig) -> str:
     return json.dumps(OmegaConf.to_container(bundle, resolve=True), indent=2)
 
 
+CONFIG_PATH = Path(__file__).resolve().parents[1] / "conf"
+
+
 @hydra.main(
-    config_path="../../conf",
+    config_path=str(CONFIG_PATH),
     config_name="contracts",
     version_base=None,
-)  # type: ignore[misc]
+)
 def main(cfg: ContractCliConfig) -> None:
     settings = PlatformSettings()
     bundle = default_contract_bundle(settings).model_dump()
