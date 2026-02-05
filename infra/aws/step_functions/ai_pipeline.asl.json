@@ -1,0 +1,66 @@
+{
+  "Comment": "Infinite Money AI pipeline",
+  "StartAt": "IngestData",
+  "States": {
+    "IngestData": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "ingest-data",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-ingest"
+      },
+      "Next": "TrainModels"
+    },
+    "TrainModels": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "train-models",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-train"
+      },
+      "Next": "ExportSignals"
+    },
+    "ExportSignals": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "export-signals",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-export"
+      },
+      "Next": "LeanBacktest"
+    },
+    "LeanBacktest": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "lean-backtest",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-backtest"
+      },
+      "Next": "QuantumOptimize"
+    },
+    "QuantumOptimize": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "quantum-opt",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-quantum"
+      },
+      "Next": "TradeIBKR"
+    },
+    "TradeIBKR": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "ibkr-trade",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-ibkr"
+      },
+      "End": true
+    }
+  }
+}

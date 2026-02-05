@@ -1,0 +1,90 @@
+{
+  "Comment": "Infinite Money advanced AI+Quantum pipeline",
+  "StartAt": "ValidateData",
+  "States": {
+    "ValidateData": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "validate-data",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-validate"
+      },
+      "Next": "BuildFeatures"
+    },
+    "BuildFeatures": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "build-features",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-features"
+      },
+      "Next": "TrainModels"
+    },
+    "TrainModels": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "train-models",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-train"
+      },
+      "Next": "BacktestLean"
+    },
+    "BacktestLean": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "lean-backtest",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-backtest"
+      },
+      "Next": "RiskGate"
+    },
+    "RiskGate": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.riskGatePassed",
+          "BooleanEquals": true,
+          "Next": "QuantumOptimize"
+        }
+      ],
+      "Default": "Stop"
+    },
+    "QuantumOptimize": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "quantum-opt",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-quantum"
+      },
+      "Next": "ExportSignals"
+    },
+    "ExportSignals": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "export-signals",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-export"
+      },
+      "Next": "TradeIBKR"
+    },
+    "TradeIBKR": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobName": "ibkr-trade",
+        "JobQueue": "infinite-money-queue",
+        "JobDefinition": "infinite-money-ibkr"
+      },
+      "End": true
+    },
+    "Stop": {
+      "Type": "Succeed"
+    }
+  }
+}
